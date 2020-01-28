@@ -2,6 +2,7 @@ from typing import List
 from copy import deepcopy
 import numpy as np
 import gym
+import pygame
 
 
 class CoolGameEnv(gym.Env):
@@ -56,4 +57,7 @@ class CoolGameEnv(gym.Env):
 
     def render(self, mode='human'):
         # TODO: Here's where we would show the screen based on the game state
-        pass
+        if mode == 'rgb':
+            # This might be useful
+            return pygame.surfarray.array3d(
+                    pygame.display.get_surface()).astype(np.uint8)
