@@ -3,8 +3,8 @@ class Game:
     def __init__(self, board, player1, player2):
         self.ticks = 0
         self.board = board
-        self.board.set(player1, 1, 1)
-        self.board.set(player2, 8, 8)
+        self.board.set(player1, 2, 2)
+        self.board.set(player2, 7, 7)
         self.player1 = player1
         self.player2 = player2
         self.winner = None
@@ -22,16 +22,19 @@ class Game:
     # Make directional moves
     def make_moves(self, player1_move, player2_move):
         self.board.resolve_moves(self.player1, player1_move, self.player2, player2_move)
+        self.player1.after_move()
+        self.player2.after_move()
 
 
 class Bot:
 
-    def __init__(self):
+    def __init__(self, name=""):
         self.ticks_between_moves = 0
         self.sleep = 0
         self.weight = 1
         self.pos_x = -100
         self.pos_y = -100
+        self.name = name
 
     def tick(self, state):
         if self.sleep > 0:
@@ -50,7 +53,7 @@ class Bot:
     def get_moves_bot(self, state):
         return state.board.get_valid_moves(self)
 
-    def after_move(self, direction, state):
+    def after_move(self):
         self.sleep = self.ticks_between_moves
 
     def act(self):
@@ -61,3 +64,7 @@ class Bot:
 
     def get_actions_bot(self, state):
         return []
+
+
+    def __repr__(self):
+        return self.name if self.name else "."

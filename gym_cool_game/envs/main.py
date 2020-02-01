@@ -3,15 +3,12 @@ from game import Game
 from board import Board
 import pygame
 
-player1 = Bot()
-player2 = Bot()
+player1 = Bot("A")
+player2 = Bot("B")
 
-board = Board(10, player1, player2)
+board = Board(10)
 
 game = Game(board, player1, player2)
-
-print("Hello Bots")
-
 
 def test_print(grid):
     for i in range(0, len(grid)):
@@ -29,6 +26,7 @@ while not game.winner:
     playerA = int(actions[0].strip())
     playerB = int(actions[1].strip())
     print("You entered: %s, %s" % (playerA, playerB))
+    game.make_moves(playerA, playerB)
 
 
 '''

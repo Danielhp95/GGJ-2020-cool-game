@@ -1,11 +1,13 @@
 import numpy as np
 
 
+DIRECTION_UP = 1
+DIRECTION_DOWN = 2
+DIRECTION_LEFT = 3
+DIRECTION_RIGHT = 4
+
 class Board:
-    DIRECTION_UP = 1
-    DIRECTION_DOWN = 2
-    DIRECTION_LEFT = 3
-    DIRECTION_RIGHT = 4
+
 
     def __init__(self, board_size):
         self.grid = np.ones((board_size, board_size), dtype=int)
