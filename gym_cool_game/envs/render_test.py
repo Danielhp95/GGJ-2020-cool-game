@@ -1,26 +1,23 @@
 import pygame
 import sys
-from gym_cool_game.envs.game import Game,Bot
-from gym_cool_game.envs.board import Board
+from game import Game,Bot
+from board import Board
+
+def test_print(grid):
+    for i in range(0, len(grid)):
+        print(str(grid[i]))
+
 
 # ---------------------
 # Prepare game for play
 # --------------------
 
-babyBot = Bot(20)
-mamaBot = Bot(30)
+babyBot = Bot()
+mamaBot = Bot()
 myboard = Board(10)
 
 myboard.set(babyBot, 1, 1)
 myboard.set(mamaBot, 1, 5)
-
-myboard.test_print()
-print()
-
-myboard.resolve_moves(babyBot, "RIGHT", mamaBot,  "LEFT")
-print()
-
-myboard.resolve_moves(babyBot, "RIGHT", mamaBot,  "LEFT")
 
 
 # -----------------
@@ -56,12 +53,6 @@ done = False
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
 
-def get_available_moves(the_grid, curr_pos):
-    col = curr_pos[0]
-    row = curr_pos[1]
-
-    available_moves = []
-
 # ------------------------
 # Main Program Loop
 # ------------------------
@@ -69,26 +60,41 @@ while not done:
 
     events = pygame.event.get()
     for event in events:
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+        elif event.type == pygame.KEYDOWN:
 
             keys_pressed = pygame.key.get_pressed()
 
             if keys_pressed[pygame.K_LEFT]:
-                myboard.resolve_moves(babyBot, "LEFT", mamaBot, "None")
-            # if keys_pressed[pygame.K_RIGHT]:
-            #
-            # if keys_pressed[pygame.K_UP]:
-            #
-            # if keys_pressed[pygame.K_DOWN]:
+                myboard.resolve_moves(babyBot, 3, mamaBot, 0)
+                print("LEFT")
+
+            if keys_pressed[pygame.K_RIGHT]:
+                myboard.resolve_moves(babyBot, 4, mamaBot, 0)
+                print("RIGHT")
+
+            if keys_pressed[pygame.K_UP]:
+                myboard.resolve_moves(babyBot, 1, mamaBot, 0)
+                print("UP")
+
+            if keys_pressed[pygame.K_DOWN]:
+                myboard.resolve_moves(babyBot, 2, mamaBot, 0)
+                print("DOWN")
 
     screen.fill(BLACK)
 
     # Draw the grid
-    for row in range(10):
-        for column in range(10):
+    for row in range(1,len(myboard.grid)-1):
+        for column in range(1,len(myboard.grid)-1):
             color = WHITE
-            if grid[row][column] != 1:
+            if myboard.grid[row][column] == babyBot:
+                # print(str(babyBot.pos_x) + "," + str(babyBot.pos_y))
                 color = GREEN
+            elif myboard.grid[row][column] == mamaBot:
+                color = RED
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
@@ -105,3 +111,4 @@ while not done:
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
 pygame.quit()
+

@@ -18,6 +18,8 @@ class Board:
     # Must be passed an object of class Bot, of course
     def set(self, bot, x, y):
 
+        print("it actually moved yo" + str(x) + "," + str(y))
+
         # Only attempt to set current position to 0 if bot is already on the board
         # This becomes irrelevant if bots are only ever instantiated in valid locations
         if self.currently_on_board(bot.pos_x, bot.pos_y) == True:
@@ -56,14 +58,17 @@ class Board:
 
         # Figure out where bot1 is moving to
         if direction1 == DIRECTION_LEFT and bot1.pos_y > 1 and self.grid[bot1.pos_x][bot1.pos_y-1] == 0:  # LEFT
+            print("SUCCESSFUL LEFT")
             bot1.next_move_y = bot1.pos_y - 1
             bot1.next_move_x = bot1.pos_x
 
         elif direction1 == DIRECTION_DOWN and bot1.pos_x < len(self.grid) - 2 and self.grid[bot1.pos_x+1][bot1.pos_y] == 0:  # DOWN
+            print("SUCCESSFUL DOWN")
             bot1.next_move_x = bot1.pos_x + 1
             bot1.next_move_y = bot1.pos_y
 
         elif direction1 == DIRECTION_RIGHT and bot1.pos_y < len(self.grid) - 2 and self.grid[bot1.pos_x][bot1.pos_y+1] == 0:  # RIGHT
+            print("SUCCESSFUL RIGHT")
             bot1.next_move_y = bot1.pos_y + 1
             bot1.next_move_x = bot1.pos_x
 
@@ -86,6 +91,12 @@ class Board:
 
         elif direction2 == DIRECTION_UP and bot2.pos_x > 1 and self.grid[bot2.pos_x-1][bot2.pos_y] == 0:  # UP
             bot2.next_move_x = bot2.pos_x - 1
+            bot2.next_move_y = bot2.pos_y
+
+        else:
+            bot1.next_move_x = bot1.pos_x
+            bot1.next_move_y = bot1.pos_y
+            bot2.next_move_x = bot2.pos_x
             bot2.next_move_y = bot2.pos_y
 
         # If the two spaces where they're moving to is not the same, move them there
