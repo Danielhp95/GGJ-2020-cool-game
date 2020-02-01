@@ -31,6 +31,7 @@ class Bot:
     def __init__(self):
         self.ticks_between_moves = 0
         self.sleep = 0
+        self.weight = 1
         self.pos_x = -100
         self.pos_y = -100
 
