@@ -31,20 +31,21 @@ class CoolGameEnv(gym.Env):
         reward_vector = [0, 0]
 
         # TODO: find if a player has won
-        self.winner = 0 
+        self.winner = -1
 
         # info should be kept empty
         info = {}
         return [[], []], reward_vector, \
-               self.winner != 0, info
+               self.winner != -1, info
             
-    def get_moves(self):
+    def get_moves(self, player: int):
         """
+        :param player: (int) player for whom we wish to generate moves
         :returns: array with all possible moves, index of columns which aren't full
         TODO: figure out what are the valid moves an agent can take.
         (i.e figure ability cooldowns / collision against map borders)
         """
-        if self.winner != 0:
+        if self.winner != -1:
             return []
         return [] # TODO
 
