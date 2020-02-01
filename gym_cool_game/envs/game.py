@@ -3,8 +3,10 @@ class Game:
     def __init__(self, board, player1, player2):
         self.ticks = 0
         self.board = board
-        self.board.set(0, 0, player1)
-        self.board.set(9, 9, player2)
+        self.board.set(player1, 1, 1)
+        self.board.set(player2, 8, 8)
+        self.player1 = player1
+        self.player2 = player2
         self.winner = None
 
     # Advance the game state until an input is needed
@@ -16,6 +18,12 @@ class Game:
     def tick(self):
         self.player1.tick(self)
         self.player2.tick(self)
+
+    # Make directional moves
+    def make_moves(self, player1_move, player2_move):
+        self.board.perform(player1_move)
+        self.player2.perform(player2_move)
+
 
 
 class Bot:
@@ -33,7 +41,7 @@ class Bot:
         self.tick_bot(state)
 
     def get_moves(self, state):
-       moves = [None]
+        moves = [None]
 
         if self.sleep == 0:
             moves += self.get_moves_bot(state) + self.get_actions_bot(state)
@@ -43,12 +51,14 @@ class Bot:
     def get_moves_bot(self, state):
         return state.board.get_valid_moves(self)
 
-    def move(self, direction, state):
-        state.board.move(self, direction)
+    def after_move(self, direction, state):
         self.sleep = self.ticks_between_moves
+
+    def act(self):
+        pass
 
     def tick_bot(self, state):
         pass
 
     def get_actions_bot(self, state):
-        pass
+        return []

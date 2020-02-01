@@ -2,13 +2,13 @@
 name = "ggj-2020-cool-game"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Charles Gbadamosi <acw524@qmul.ac.uk>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "3.8"
 gym = "^0.15.4"
 numpy = "^1.18.1"
-pygame = "^1.9.6"
+pygame = "^1.9.1"
 
 [tool.poetry.dev-dependencies]
 

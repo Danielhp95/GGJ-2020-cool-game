@@ -1,19 +1,7 @@
-"""
- Example program to show using an array to back a grid on-screen.
-
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
-
- Explanation video: http://youtu.be/mdTeqiWyFnc
-
- #TODO
-    - list of valid moves
-
-"""
+from game import Bot
+from game import Game
+from board import Board
 import pygame
-import sys
 
 player1 = Bot()
 player2 = Bot()
@@ -24,20 +12,23 @@ game = Game(board, player1, player2)
 
 print("Hello Bots")
 
-while not game.winner:
-    pass
-#    # step forward the game until input is needed
-#    game.step()
-#    # get input
-#    inp = input("Enter Actions in the form 'Player1,Player2' where valid actions are Up|Down|Left|Right|Action|RotR|RotL")
-#    actions = inp.split(',').strip()
-#
-#    for i in range(len(actions)):
-#        if actions[i] == "Up":
-#            actions[i] = UP
-#        elif actions[i] == "Down":
-#            actions[i] = DOWN
 
+def test_print(grid):
+    for i in range(0, len(grid)):
+        print(str(grid[i]))
+
+
+while not game.winner:
+    # step forward the game until input is needed
+    test_print(game.board.grid)
+    game.step()
+    # get input
+    inp = input("Enter Actions in the form 'Player1,Player2' where valid actions are Null(0)|Up(1)|Down(2)|Left(3)|Right(4)|Action(5)|RotR(6)|RotL(7)\n")
+    actions = inp.split(',')
+
+    playerA = int(actions[0].strip())
+    playerB = int(actions[1].strip())
+    print("You entered: %s, %s" % (playerA, playerB))
 
 
 '''

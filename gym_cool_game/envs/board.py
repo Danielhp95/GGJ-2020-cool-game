@@ -1,5 +1,3 @@
-from gym_cool_game.envs.game import Bot
-
 import numpy as np
 
 
@@ -63,33 +61,3 @@ class Board:
             self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_x -= 1
             self.grid[bot.pos_x][bot.pos_y] = 2
-
-def test_print(grid):
-    for i in range(0, len(grid)):
-        print(str(grid[i]))
-
-# Testing stuff
-babyBot = Bot()
-mamaBot = Bot()
-myboard = Board(10, babyBot, mamaBot)
-
-myboard.set(babyBot, 1, 1)
-test_print(myboard.grid)
-print("Baby bot is currently located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
-print()
-
-myboard.move(babyBot, 1)
-test_print(myboard.grid)
-print("Baby bot moved UP and is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
-print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
-
-myboard.set(babyBot, 4, 4)
-test_print(myboard.grid)
-print("Baby bot is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
-print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
-print()
-
-myboard.move(babyBot, 2)
-test_print(myboard.grid)
-print("Baby bot moved RIGHT and is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
-print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
