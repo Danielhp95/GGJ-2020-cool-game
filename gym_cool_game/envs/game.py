@@ -21,9 +21,7 @@ class Game:
 
     # Make directional moves
     def make_moves(self, player1_move, player2_move):
-        self.board.perform(player1_move)
-        self.player2.perform(player2_move)
-
+        self.board.resolve_moves(self.player1, player1_move, self.player2, player2_move)
 
 
 class Bot:

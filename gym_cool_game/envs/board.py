@@ -2,6 +2,10 @@ import numpy as np
 
 
 class Board:
+    DIRECTION_UP = 1
+    DIRECTION_DOWN = 2
+    DIRECTION_LEFT = 3
+    DIRECTION_RIGHT = 4
 
     def __init__(self, board_size):
         self.grid = np.ones((board_size, board_size), dtype=int)
@@ -49,36 +53,36 @@ class Board:
     def resolve_moves(self, bot1, direction1, bot2, direction2):
 
         # Figure out where bot1 is moving to
-        if direction1 == "LEFT" and bot1.pos_y > 1 and self.grid[bot1.pos_x][bot1.pos_y-1] == 0:  # LEFT
+        if direction1 == DIRECTION_LEFT and bot1.pos_y > 1 and self.grid[bot1.pos_x][bot1.pos_y-1] == 0:  # LEFT
             bot1.next_move_y = bot1.pos_y - 1
             bot1.next_move_x = bot1.pos_x
 
-        elif direction1 == "DOWN" and bot1.pos_x < len(self.grid) - 2 and self.grid[bot1.pos_x+1][bot1.pos_y] == 0:  # DOWN
+        elif direction1 == DIRECTION_DOWN and bot1.pos_x < len(self.grid) - 2 and self.grid[bot1.pos_x+1][bot1.pos_y] == 0:  # DOWN
             bot1.next_move_x = bot1.pos_x + 1
             bot1.next_move_y = bot1.pos_y
 
-        elif direction1 == "RIGHT" and bot1.pos_y < len(self.grid) - 2 and self.grid[bot1.pos_x][bot1.pos_y+1] == 0:  # RIGHT
+        elif direction1 == DIRECTION_RIGHT and bot1.pos_y < len(self.grid) - 2 and self.grid[bot1.pos_x][bot1.pos_y+1] == 0:  # RIGHT
             bot1.next_move_y = bot1.pos_y + 1
             bot1.next_move_x = bot1.pos_x
 
-        elif direction1 == "UP" and bot1.pos_x > 1 and self.grid[bot1.pos_x-1][bot1.pos_y] == 0:  # UP
+        elif direction1 == DIRECTION_UP and bot1.pos_x > 1 and self.grid[bot1.pos_x-1][bot1.pos_y] == 0:  # UP
             bot1.next_move_x = bot1.pos_x - 1
             bot1.next_move_y = bot1.pos_y
 
         # Figure out where bot2 is moving to
-        if direction2 == "LEFT" and bot2.pos_y > 1 and self.grid[bot2.pos_x][bot2.pos_y-1] == 0:  # LEFT
+        if direction2 == DIRECTION_LEFT and bot2.pos_y > 1 and self.grid[bot2.pos_x][bot2.pos_y-1] == 0:  # LEFT
             bot2.next_move_y = bot2.pos_y - 1
             bot2.next_move_x = bot2.pos_x
 
-        elif direction2 == "DOWN" and bot2.pos_x < len(self.grid) - 2 and self.grid[bot2.pos_x+1][bot2.pos_y] == 0:  # DOWN
+        elif direction2 == DIRECTION_DOWN and bot2.pos_x < len(self.grid) - 2 and self.grid[bot2.pos_x+1][bot2.pos_y] == 0:  # DOWN
             bot2.next_move_x = bot2.pos_x + 1
             bot2.next_move_y = bot2.pos_y
 
-        elif direction2 == "RIGHT" and bot2.pos_y < len(self.grid) - 2 and self.grid[bot2.pos_x][bot2.pos_y+1] == 0:  # RIGHT
+        elif direction2 == DIRECTION_RIGHT and bot2.pos_y < len(self.grid) - 2 and self.grid[bot2.pos_x][bot2.pos_y+1] == 0:  # RIGHT
             bot2.next_move_y = bot2.pos_y + 1
             bot2.next_move_x = bot2.pos_x
 
-        elif direction2 == "UP" and bot2.pos_x > 1 and self.grid[bot2.pos_x-1][bot2.pos_y] == 0:  # UP
+        elif direction2 == DIRECTION_UP and bot2.pos_x > 1 and self.grid[bot2.pos_x-1][bot2.pos_y] == 0:  # UP
             bot2.next_move_x = bot2.pos_x - 1
             bot2.next_move_y = bot2.pos_y
 
