@@ -51,6 +51,3 @@ class Bot:
 
     def get_actions_bot(self, state):
         pass
-
-    def __repr__(self):
-        return 'B'
