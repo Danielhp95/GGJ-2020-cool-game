@@ -15,7 +15,7 @@ def test_print(grid):
         print(str(grid[i]))
 
 
-while not game.winner:
+while False: #not game.winner:
     # step forward the game until input is needed
     test_print(game.board.grid)
     game.step()

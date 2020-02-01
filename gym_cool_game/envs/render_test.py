@@ -16,8 +16,8 @@ babyBot = Bot()
 mamaBot = Bot()
 myboard = Board(10)
 
-myboard.set(babyBot, 1, 1)
-myboard.set(mamaBot, 1, 5)
+game = Game(myboard, babyBot, mamaBot)
+
 
 
 # -----------------
@@ -56,6 +56,10 @@ clock = pygame.time.Clock()
 # ------------------------
 # Main Program Loop
 # ------------------------
+
+bot1Input = None
+bot2Input = None
+
 while not done:
 
     events = pygame.event.get()
@@ -63,27 +67,38 @@ while not done:
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-
         elif event.type == pygame.KEYDOWN:
-
             keys_pressed = pygame.key.get_pressed()
 
             if keys_pressed[pygame.K_LEFT]:
-                myboard.resolve_moves(babyBot, 3, mamaBot, 0)
-                print("LEFT")
+                bot1Input = 3
 
             if keys_pressed[pygame.K_RIGHT]:
-                myboard.resolve_moves(babyBot, 4, mamaBot, 0)
-                print("RIGHT")
+                bot1Input = 4
 
             if keys_pressed[pygame.K_UP]:
-                myboard.resolve_moves(babyBot, 1, mamaBot, 0)
-                print("UP")
+                bot1Input = 1
 
             if keys_pressed[pygame.K_DOWN]:
-                myboard.resolve_moves(babyBot, 2, mamaBot, 0)
-                print("DOWN")
+                bot1Input = 2
 
+            if keys_pressed[pygame.K_a]:
+                bot2Input = 3
+
+            if keys_pressed[pygame.K_d]:
+                bot2Input = 4
+
+            if keys_pressed[pygame.K_w]:
+                bot2Input = 1
+
+            if keys_pressed[pygame.K_s]:
+                bot2Input = 2
+
+    if bot1Input and bot2Input:
+        game.make_moves(bot1Input, bot2Input)
+        bot1Input = None
+        bot2Input = None
+ 
     screen.fill(BLACK)
 
     # Draw the grid
