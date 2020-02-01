@@ -27,6 +27,8 @@ while not game.winner:
     playerB = int(actions[1].strip())
     print("You entered: %s, %s" % (playerA, playerB))
     game.make_moves(playerA, playerB)
+    # TODO: Select from list of valid moves
+    # TODO: Select from list of valid actions
 
 
 '''

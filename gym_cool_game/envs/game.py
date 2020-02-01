@@ -34,7 +34,7 @@ class Bot:
         self.weight = 1
         self.pos_x = -100
         self.pos_y = -100
-        self.name = name
+        self.name = str(name)
 
     def tick(self, state):
         if self.sleep > 0:
