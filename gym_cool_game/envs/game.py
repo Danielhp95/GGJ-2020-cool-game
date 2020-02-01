@@ -8,9 +8,9 @@ class Game:
         self.winner = None
 
     # Advance the game state until an input is needed
-    def continue(self):
-        while not (self.player1.get_moves(self) or self.player2.get_moves(self)):
-            self.tick()
+    # def continue(self):
+    #     while not (self.player1.get_moves(self) or self.player2.get_moves(self)):
+    #         self.tick()
 
     # Advance the game state one tick
     def tick(self):
@@ -23,7 +23,8 @@ class Bot:
     def __init__(self):
         self.ticks_between_moves = 0
         self.sleep = 0
-        self.pos = [-100, -100]
+        self.pos_x = -100
+        self.pos_y = -100
 
     def tick(self, state):
         if self.sleep > 0:

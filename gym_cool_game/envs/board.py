@@ -1,33 +1,95 @@
+from gym_cool_game.envs.game import Bot
+
+import numpy as np
+
+
 class Board:
+    UP = 1
+    RIGHT = 2
+    DOWN = 3
+    LEFT = 4
 
     def __init__(self, board_size, bot1, bot2):
-        self.grid = [[0 for x in range(int(board_size))] for y in range(int(board_size))] # Unoccupied tiles will have value 0
+        # self.grid = [[1 for x in range(int(board_size))] for y in range(int(board_size))]
+        # self.grid[1:-1][1:-1] = 0
+        self.grid = np.ones((board_size, board_size), dtype=int)
+        self.grid[1:-1, 1:-1] = 0
+        # todo - make board boundaries 1s
+        # make occupied tiles occupied by object itself
+        self.bot1 = bot1
+        self.bot2 = bot2
 
     # Set the position of bot to (x, y)
-    # Must be fed an object of class Bot, of course
-    def set(self, x, y, bot):
-        self.grid[x][y] = 1 #set new tile on grid to occupied
-        bot.pos[0] = x
-        bot.pos[1] = y
+    # Must be passed an object of class Bot, of course
+    def set(self, bot, x, y):
+        try: # In case the current location is off the grid
+            self.grid[bot.pos_x][bot.pos_y] = 0
+        except:
+            None
 
-        # why you no work dsjkfldasjlf
+        bot.pos_x = x
+        bot.pos_y = y
+        self.grid[x][y] = 2  # set new tile on grid to occupied
 
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
 
         # begin with all possible directional moves
-        valid_moves = [bot.pos][]
-        if bot.pos[0] == 0:
+        valid_moves = []
 
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if self.grid[bot.pos_x + i][bot.pos_y + j] == 0:
+                    valid_moves.append(
+                        [bot.pos_x + i, bot.pos_y + j])  # note: this allows for staying put as a valid move
 
-        bot.pos[0]
-        return []
-
+        return valid_moves
 
     # Move bot in direction
     def move(self, bot, direction):
-        pass
+        if direction == 1 and bot.pos_y > 1:  # UP
+            self.grid[bot.pos_x][bot.pos_y] = 0
+            bot.pos_y -= 1
+            self.grid[bot.pos_x][bot.pos_y] = 2
+        elif direction == 2 and bot.pos_x < len(self.grid - 2):  # RIGHT
+            self.grid[bot.pos_x][bot.pos_y] = 0
+            bot.pos_x += 1
+            self.grid[bot.pos_x][bot.pos_y] = 2
+        elif direction == 3 and bot.pos_y < len(self.grid - 2):  # DOWN
+            self.grid[bot.pos_x][bot.pos_y] = 0
+            bot.pos_y += 1
+            self.grid[bot.pos_x][bot.pos_y] = 2
+        elif direction == 4 and bot.pos_x > 1:  # LEFT
+            self.grid[bot.pos_x][bot.pos_y] = 0
+            bot.pos_x -= 1
+            self.grid[bot.pos_x][bot.pos_y] = 2
 
+def test_print(grid):
+    for i in range(0, len(grid)):
+        print(str(grid[i]))
+
+# Testing stuff
 babyBot = Bot()
 mamaBot = Bot()
 myboard = Board(10, babyBot, mamaBot)
+
+myboard.set(babyBot, 1, 1)
+test_print(myboard.grid)
+print("Baby bot is currently located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
+print()
+
+myboard.move(babyBot, 1)
+test_print(myboard.grid)
+print("Baby bot moved UP and is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
+print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
+
+myboard.set(babyBot, 4, 4)
+test_print(myboard.grid)
+print("Baby bot is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
+print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
+print()
+
+myboard.move(babyBot, 2)
+test_print(myboard.grid)
+print("Baby bot moved RIGHT and is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
+print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
