@@ -5,14 +5,21 @@ class Game:
         self.board = board
         self.board.set(0,0, player1)
         self.board.set(9,9, player2)
+        self.winner = None
 
 
+    # Advance the game state until an input is needed
+    def continue(self):
+        while not (self.player1.get_moves(self) or self.player2.get_moves(self)):
+            self.tick()
+
+
+    # Advance the game state one tick
     def tick(self):
         self.player1.tick(self)
         self.player2.tick(self)
         
-
-
+        
 class Bot:
 
     def __init__(self):
