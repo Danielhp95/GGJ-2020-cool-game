@@ -15,7 +15,10 @@ class Board:
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
 
-        if bot.pos[0]
+        # begin with all possible directional moves
+        valid_moves = [bot.pos][]
+        if bot.pos[0] == 0:
+
 
         bot.pos[0]
         return []
