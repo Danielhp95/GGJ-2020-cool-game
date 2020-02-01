@@ -8,7 +8,7 @@ class Game:
         self.winner = None
 
     # Advance the game state until an input is needed
-    def continue(self):
+    def step(self):
         while not (self.player1.get_moves(self) or self.player2.get_moves(self)):
             self.tick()
 
@@ -23,7 +23,8 @@ class Bot:
     def __init__(self):
         self.ticks_between_moves = 0
         self.sleep = 0
-        self.pos = [-100, -100]
+        self.pos_x = -100
+        self.pos_y = -100
 
     def tick(self, state):
         if self.sleep > 0:
@@ -32,7 +33,7 @@ class Bot:
         self.tick_bot(state)
 
     def get_moves(self, state):
-        moves = [None]
+       moves = [None]
 
         if self.sleep == 0:
             moves += self.get_moves_bot(state) + self.get_actions_bot(state)
@@ -44,6 +45,7 @@ class Bot:
 
     def move(self, direction, state):
         state.board.move(self, direction)
+        self.sleep = self.ticks_between_moves
 
     def tick_bot(self, state):
         pass
