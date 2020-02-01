@@ -4,16 +4,15 @@ import numpy as np
 
 
 class Board:
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-    LEFT = 4
+    LEFT = 1
+    DOWN = 2
+    RIGHT = 3
+    UP = 4
 
     def __init__(self, board_size, bot1, bot2):
-        # self.grid = [[1 for x in range(int(board_size))] for y in range(int(board_size))]
-        # self.grid[1:-1][1:-1] = 0
         self.grid = np.ones((board_size, board_size), dtype=int)
         self.grid[1:-1, 1:-1] = 0
+        self.grid = self.grid.tolist()
         # todo - make board boundaries 1s
         # make occupied tiles occupied by object itself
         self.bot1 = bot1
@@ -47,22 +46,22 @@ class Board:
 
     # Move bot in direction
     def move(self, bot, direction):
-        if direction == 1 and bot.pos_y > 1:  # UP
+        if direction == 1 and bot.pos_y > 1:  # LEFT
             self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_y -= 1
             self.grid[bot.pos_x][bot.pos_y] = 2
-        elif direction == 2 and bot.pos_x < len(self.grid - 2):  # RIGHT
+        elif direction == 2 and bot.pos_x < len(self.grid - 2):  # DOWN
             self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_x += 1
             self.grid[bot.pos_x][bot.pos_y] = 2
-        elif direction == 3 and bot.pos_y < len(self.grid - 2):  # DOWN
+        elif direction == 3 and bot.pos_y < len(self.grid - 2):  # RIGHT
             self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_y += 1
             self.grid[bot.pos_x][bot.pos_y] = 2
-        elif direction == 4 and bot.pos_x > 1:  # LEFT
+        elif direction == 4 and bot.pos_x > 1:  # UP
             self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_x -= 1
-            self.grid[bot.pos_x][bot.pos_y] = 2
+            self.grid[bot.pos_x][bot.pos_y] = bot
 
 def test_print(grid):
     for i in range(0, len(grid)):
@@ -89,7 +88,7 @@ print("Baby bot is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.po
 print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
 print()
 
-myboard.move(babyBot, 2)
+myboard.move(babyBot, 4)
 test_print(myboard.grid)
 print("Baby bot moved RIGHT and is now located at: " + str(babyBot.pos_x) + "," + str(babyBot.pos_y))
 print("Your valid moves are: " + str(myboard.get_valid_moves(babyBot)))
