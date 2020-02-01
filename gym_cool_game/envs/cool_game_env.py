@@ -25,6 +25,7 @@ class CoolGameEnv(gym.Env):
 
     def step(self, actions: List):
         """ 
+        returns: (obsvervations: List, rewards: List, done: bool)
         :param actions: List of two elements, containing one action for each player
         """
         # TODO: find correct reward vector

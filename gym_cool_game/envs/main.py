@@ -8,13 +8,39 @@
 
  Explanation video: http://youtu.be/mdTeqiWyFnc
 
-
  #TODO
     - list of valid moves
 
-
 """
 import pygame
+import sys
+
+player1 = Bot()
+player2 = Bot()
+
+board = Board(10, player1, player2)
+
+game = Game(board, player1, player2)
+
+print("Hello Bots")
+
+while not game.winner:
+    pass
+#    # step forward the game until input is needed
+#    game.step()
+#    # get input
+#    inp = input("Enter Actions in the form 'Player1,Player2' where valid actions are Up|Down|Left|Right|Action|RotR|RotL")
+#    actions = inp.split(',').strip()
+#
+#    for i in range(len(actions)):
+#        if actions[i] == "Up":
+#            actions[i] = UP
+#        elif actions[i] == "Down":
+#            actions[i] = DOWN
+
+
+
+'''
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -22,20 +48,8 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
-# This sets the WIDTH and HEIGHT of each grid location
-WIDTH = 20
-HEIGHT = 20
-
 # This sets the margin between each cell
 MARGIN = 5
-
-# Create a 2D array
-grid_size = 10
-grid = [[0 for x in range(grid_size)] for y in range(grid_size)]
-
-# Set starting position here
-current_pos = [5,5]
-grid[current_pos[0]][current_pos[1]] = 1
 
 # Initialize pygame
 pygame.init()
@@ -45,19 +59,13 @@ WINDOW_SIZE = [255, 255]
 screen = pygame.display.set_mode(WINDOW_SIZE)
 
 # Set title of screen
-pygame.display.set_caption("Array Backed Grid")
+pygame.display.set_caption("Bot Battle")
 
 # Loop until the user clicks the close button.
 done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
-
-def get_available_moves(the_grid, curr_pos):
-    col = curr_pos[0]
-    row = curr_pos[1]
-
-    available_moves = []
 
 # -------- Main Program Loop -----------
 while not done:
@@ -119,3 +127,4 @@ while not done:
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
 pygame.quit()
+'''
