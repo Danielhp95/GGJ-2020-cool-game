@@ -9,6 +9,11 @@ class Board:
         self.grid[1:-1, 1:-1] = 0
         self.grid = self.grid.tolist()
 
+    # get cell at (x, y)
+    def get(self, x, y):
+
+        return self.grid[x][y]
+
     # Set the position of bot to (x, y)
     # Must be passed an object of class Bot, of course
     def set(self, bot, x, y):
