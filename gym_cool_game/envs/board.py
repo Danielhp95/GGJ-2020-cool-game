@@ -10,7 +10,13 @@ class Board:
 
     # get cell at (x, y)
     def get(self, x, y):
-        return self.grid[x][y]
+
+        try:
+            cell = self.grid[x][y]
+        except:
+            cell = None
+
+        return cell
 
     # Set the position of bot to (x, y)
     # Must be passed an object of class Bot, of course

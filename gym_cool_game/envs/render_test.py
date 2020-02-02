@@ -91,8 +91,8 @@ player2_text_rect.center = (800,20)
 
 # Bots are now initialized with a sprite img
 player1 = SawBotPyg(spikyBot_img)
-player2 = SawBotPyg(spikyBot_img)
-#player2 = TorchBotPyg(blowTorchBot_img)
+#player2 = SawBotPyg(spikyBot_img)
+player2 = TorchBotPyg(blowTorchBot_img)
 myboard = Board(10)
 
 game = Game(myboard, player1, player2)

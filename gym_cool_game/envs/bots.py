@@ -37,7 +37,7 @@ class SawBot(Bot):
 				# check if bot exists
 				cell = state.board.get(x, y)
 				if hasattr(cell, 'health'):
-					# apply damage if the saw ability is active
+					# apply damage
 					cell.health -= self.dmg
 					break
 
@@ -84,6 +84,8 @@ class TorchBot(Bot):
 		self.torch_range = torch_range
 		self.duration = duration
 		self.cooldown = cooldown
+		self.active_time = 0
+		self.torch_cells = []
 
 	def act(self):
 
@@ -95,17 +97,19 @@ class TorchBot(Bot):
 		self.active_time -= 1
 		# if ability is active spawn flame in direction of current rotation with range of torch_range
 		if self.active_time > self.cooldown:
-			if self.curr_rotation == 0:
-				torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
-			elif self.curr_rotation == 90:
-				torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
-			elif self.curr_rotation == 180:
-				torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
+			if self.curr_rotation == 1:
+				self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
+			elif self.curr_rotation == 2:
+				self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
+			elif self.curr_rotation == 3:
+				self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
 			else:
-				torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
-			for cell in torch_cells:
+				self.torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
+			for cell in self.torch_cells:
 				cell = state.board.get(cell[0], cell[1])
 				if hasattr(cell, 'health'):
 					# apply damage to opponent if they are in torch_cells
 					cell.health -= self.dmg
 					break
+		else:
+			self.torch_cells = []
