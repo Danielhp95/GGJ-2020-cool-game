@@ -9,6 +9,15 @@ def test_print(grid):
     for i in range(0, len(grid)):
         print(str(grid[i]))
 
+def blit_alpha(target, source, location, opacity):
+    x = location[0]
+    y = location[1]
+    temp = pygame.Surface((source.get_width(), source.get_height())).convert()
+    temp.blit(target, (-x, -y))
+    temp.blit(source, (0, 0))
+    temp.set_alpha(opacity)
+    target.blit(temp, location)
+
 
 
 # -----------------
@@ -33,14 +42,14 @@ BOT_COLOR_B_FADED = (60, 60, 100)
 
 
 # This sets the WIDTH and HEIGHT of each grid location
-WIDTH = 20
-HEIGHT = 20
+WIDTH = 80
+HEIGHT = 80
 
 # This sets the margin between each cell
 MARGIN = 5
 
 # Set the HEIGHT and WIDTH of the screen
-WINDOW_SIZE = [255, 255]
+WINDOW_SIZE = [1000, 1000]
 screen = pygame.display.set_mode(WINDOW_SIZE)
 
 # Set title of screen
@@ -56,9 +65,24 @@ clock = pygame.time.Clock()
 # Setup images
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'images')
-spikyBot_img = pygame.image.load(os.path.join(img_folder, 'punkrobot2.png')).convert()
-blowTorchBot_img = pygame.image.load(os.path.join(img_folder, 'fireBot.png')).convert()
+spikyBot_img = pygame.image.load(os.path.join(img_folder, 'punkrobot2.png')).convert_alpha()
+blowTorchBot_img = pygame.image.load(os.path.join(img_folder, 'fireBot.png')).convert_alpha()
 
+# Setup font
+fonts_folder = os.path.join(game_folder,'fonts')
+font = pygame.font.Font(os.path.join(fonts_folder, 'SigmarOne.ttf'), 32)
+
+player1name = font.render('Player 1', True, BLUE)
+player2name = font.render('Player 2', True, GREEN)
+
+# create a rectangular object for the
+# text surface object
+player1_text_rect = player1name.get_rect()
+player2_text_rect = player2name.get_rect()
+
+# set the center of the rectangular object.
+player1_text_rect.center = (100, 20)
+player2_text_rect.center = (800,20)
 
 # ---------------------
 # Prepare game for play
@@ -183,9 +207,24 @@ while not done:
                               WIDTH,
                               HEIGHT])
 
+    # Render players
 
     player1sprite.draw(screen)
     player2sprite.draw(screen)
+
+    # Render player names and scoreboard
+
+    # Player 1
+    pygame.draw.rect(screen, (255, 0, 0), (10,40, player1.max_health, 30))  # NEW
+    pygame.draw.rect(screen, (0, 128, 0), (10,40, player1.curr_health, 30))  # NEW
+    screen.blit(player1name, player1_text_rect)
+
+    # Player 2
+    pygame.draw.rect(screen, (255, 0, 0), (600,40, player1.max_health, 30))  # NEW
+    pygame.draw.rect(screen, (0, 128, 0), (600,40, player1.curr_health, 30))  # NEW
+    screen.blit(player2name, player2_text_rect)
+
+    myboard.get_valid_moves(player1)
 
     # Limit to 60 frames per second
     clock.tick(60)

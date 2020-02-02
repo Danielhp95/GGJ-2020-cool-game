@@ -76,6 +76,8 @@ class Bot(pygame.sprite.Sprite):
         self.curr_rotation = 0
         self.flipped_vert = False
         self.flipped_horiz = False
+        self.curr_health = 10
+        self.max_health = 300
 
     def tick(self, state):
         if self.sleep > 0:

@@ -34,14 +34,19 @@ class Board:
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
 
-        # begin with all possible directional moves
         valid_moves = []
 
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if self.grid[bot.pos_x + i][bot.pos_y + j] == 0:
-                    valid_moves.append(
-                        [bot.pos_x + i, bot.pos_y + j])  # note: this allows for staying put as a valid move
+        if self.grid[bot.pos_x-1][bot.pos_y] == 0:
+            valid_moves.append("LEFT")
+
+        if self.grid[bot.pos_x + 1][bot.pos_y] == 0:
+            valid_moves.append("RIGHT")
+
+        if self.grid[bot.pos_x][bot.pos_y-1] == 0:
+            valid_moves.append("DOWN")
+
+        if self.grid[bot.pos_x][bot.pos_y + 1] == 0:
+            valid_moves.append("UP")
 
         return valid_moves
 
