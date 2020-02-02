@@ -14,8 +14,11 @@ class Game:
 
     # Advance the game state until an input is needed
     def step(self):
-        while not self.is_waiting():
+        while not self.is_waiting() and not self.is_gameover():
             self.tick()
+
+    def is_gameover(self):
+        return self.winner
 
     # Is the game waiting to recieve ANY input?
     def is_waiting(self):
@@ -26,11 +29,17 @@ class Game:
         self.player1.tick(self)
         self.player2.tick(self)
 
+        if self.player1.health <= 0:
+            self.winner = self.player2
+        elif self.player2.health <= 0:
+            self.winner = self.player1
+
     # resolve actions, then resolve moves.
     def handle_input(self, player1_input, player2_input):
-        self.take_actions(player1_input, player2_input)
-        self.make_moves(player1_input, player2_input)
-        self.tick()
+        if not self.is_gameover():
+            self.take_actions(player1_input, player2_input)
+            self.make_moves(player1_input, player2_input)
+            self.tick()
 
     # do we need input from this bot? i.e. is the bot asleep?
     def is_waiting_for(self, bot):
@@ -60,23 +69,16 @@ class Game:
             self.player2.after_move()
 
 
-class Bot(pygame.sprite.Sprite):
-
-    def __init__(self, name="", image = None):
-        pygame.sprite.Sprite.__init__(self)
-        screen = pygame.display.get_surface()
-        self.image = image
-        self.rect = image.get_rect()
-        self.ticks_between_moves = 1
+class Bot():
+    def __init__(self, name="", ticks_between_moves = 1):
+        self.ticks_between_moves = ticks_between_moves
         self.sleep = 0
         self.weight = 1
         self.pos_x = -100
         self.pos_y = -100
         self.name = str(name)
-        self.curr_rotation = 0
-        self.flipped_vert = False
-        self.flipped_horiz = False
-        self.curr_health = 10
+        self.curr_rotation = 1
+        self.health = 10
         self.max_health = 300
 
     def tick(self, state):
@@ -84,6 +86,10 @@ class Bot(pygame.sprite.Sprite):
             self.sleep -= 1
 
         self.tick_bot(state)
+
+    def update_rotation(self, direction):
+        self.curr_rotation = direction
+
 
     def is_sleeping(self):
         return self.sleep > 0
@@ -97,7 +103,7 @@ class Bot(pygame.sprite.Sprite):
         return moves
 
     def get_moves_bot(self, state):
-        return DIRECTIONS
+        return state.board.get_valid_moves(self)
 
     def get_actions_bot(self, state):
         return [ACTION]

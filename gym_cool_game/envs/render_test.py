@@ -1,7 +1,8 @@
 import pygame
 import sys
 import os
-from game import Game, Bot
+from game import Game
+from pygame_bots import *
 from board import Board
 from valid_inputs import *
 
@@ -89,11 +90,9 @@ player2_text_rect.center = (800,20)
 # --------------------
 
 # Bots are now initialized with a sprite img
-player1 = Bot("mamaBot",spikyBot_img)
-player2 = Bot("babyBot",blowTorchBot_img)
-player2.weight = 3
-player2.ticks_between_moves = 2
-player1.ticks_between_moves = 8
+player1 = SawBotPyg(spikyBot_img)
+player2 = SawBotPyg(spikyBot_img)
+#player2 = TorchBotPyg(blowTorchBot_img)
 myboard = Board(10)
 
 game = Game(myboard, player1, player2)
@@ -145,7 +144,6 @@ while not done:
 
             if keys_pressed[pygame.K_SPACE]:
                 bot2Input = ACTION
-
 
 
     if (not game.is_waiting_for(player1) or bot1Input) and (not game.is_waiting_for(player2) or bot2Input):
@@ -208,7 +206,6 @@ while not done:
                               HEIGHT])
 
     # Render players
-
     player1sprite.draw(screen)
     player2sprite.draw(screen)
 
@@ -216,12 +213,12 @@ while not done:
 
     # Player 1
     pygame.draw.rect(screen, (255, 0, 0), (10,40, player1.max_health, 30))  # NEW
-    pygame.draw.rect(screen, (0, 128, 0), (10,40, player1.curr_health, 30))  # NEW
+    pygame.draw.rect(screen, (0, 128, 0), (10,40, player1.health, 30))  # NEW
     screen.blit(player1name, player1_text_rect)
 
     # Player 2
     pygame.draw.rect(screen, (255, 0, 0), (600,40, player1.max_health, 30))  # NEW
-    pygame.draw.rect(screen, (0, 128, 0), (600,40, player1.curr_health, 30))  # NEW
+    pygame.draw.rect(screen, (0, 128, 0), (600,40, player1.health, 30))  # NEW
     screen.blit(player2name, player2_text_rect)
 
     myboard.get_valid_moves(player1)

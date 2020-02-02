@@ -1,4 +1,4 @@
-from gym_cool_game.envs.game import Bot
+from game import Bot
 
 
 class SawBot(Bot):
@@ -8,8 +8,9 @@ class SawBot(Bot):
 				 dmg_max=5,
 				 weight=3,
 				 duration=3,
-				 cooldown=5):
-		super().__init__('SawBot')
+				 cooldown=5,
+				 ticks_between_moves=1):
+		Bot.__init__(self, 'SawBot')
 
 		self.dmg_min = dmg_min
 		self.dmg = dmg_min
@@ -47,8 +48,9 @@ class NailBot(Bot):
 				 dmg=1,
 				 weight=1,
 				 bullet_speed=3,
-				 cooldown=2):
-		super().__init__('NailBot')
+				 cooldown=2,
+				 ticks_between_moves=3):
+		Bot.__init__(self, 'NailBot')
 
 		self.dmg = dmg
 		self.weight = weight
@@ -66,15 +68,16 @@ class NailBot(Bot):
 			self.ability_counter -= 1
 
 
-class BlowTorch(Bot):
+class TorchBot(Bot):
 
 	def __init__(self,
 				 dmg=2,
 				 weight=2,
 				 torch_range=2,
 				 duration=2,
-				 cooldown=3):
-		super().__init__('BlowTorch')
+				 cooldown=3,
+				 ticks_between_moves=2):
+		Bot.__init__(self, 'Torch')
 
 		self.dmg = dmg
 		self.weight = weight
