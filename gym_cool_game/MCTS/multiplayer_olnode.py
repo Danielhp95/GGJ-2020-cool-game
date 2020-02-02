@@ -27,8 +27,7 @@ class MultiplayerOpenLoopNode:
     #     self.player_just_moved = state.player_just_moved  # To check who won or who lost.
 
     def is_fully_expanded(self):
-        if self.is_chance_node:
-            stop = True
+        assert not self.is_chance_node
         return self.untried_moves == []
 
     def doStuff(self, moves, whereWeEndUpAfterwards):
