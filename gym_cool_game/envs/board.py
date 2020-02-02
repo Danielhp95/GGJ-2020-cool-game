@@ -81,7 +81,7 @@ class Board:
         else:
             next_pos = (bot.pos_x, bot.pos_y)
 
-        if direction:
+        if direction in DIRECTIONS:
             bot.update_rotation(direction)
 
         return next_pos
