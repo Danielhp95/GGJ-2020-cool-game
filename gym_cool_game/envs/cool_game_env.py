@@ -4,15 +4,40 @@ import numpy as np
 import gym
 import pygame
 
+from bots import SpikeBot, TorchBot
+
+BOT_TYPE_SPIKE = 0
+BOT_TYPE_TORCH = 1
+BOT_TYPE_NAIL = 1
 
 class CoolGameEnv(gym.Env):
 
-    def __init__(self):
+    def __init__(self, botA_type=0, botB_type=1, board_size=10):
         # TODO: figure out params
+        self.botA_type = botA_type
+        self.botB_type = botB_type
+        self.board_size = board_size
+        self.current_state = None
         self.reset()
 
     def reset(self):
+        self.player1 = self.get_bot(self.botA_type)
+        self.player2 = self.get_bot(self.botB_type)
+        self.board = Board(self.board_size)
+        self.current_state = Game(self.board, self.player1, self.player2)
+
         return np.array([[],[]]) # TODO: must return observation for each agent
+
+    def get_bot(self, bot_type):
+        if bot_type == BOT_TYPE_SPIKE:
+            return SpikeBot()
+        elif bot_type == BOT_TYPE_TORCH:
+            return TorchBot()
+        elif bot_type == BOT_TYPE_NAIL:
+            return NailBot()
+        else:
+            print("ERROR: Invalid Bot Type")
+            return SpikeBot()
 
     def clone(self):
         """ 
@@ -21,18 +46,24 @@ class CoolGameEnv(gym.Env):
               Because otherwise MCTS would be operating on the real game board.
         :returns: deep copy of this GameState
         """
-        return None # TODO
+
+        return deepcopy(self)
+
 
     def step(self, actions: List):
         """ 
         returns: (obsvervations: List, rewards: List, done: bool)
         :param actions: List of two elements, containing one action for each player
         """
-        # TODO: find correct reward vector
-        reward_vector = [0, 0]
+
+        self.current_state.handle_input(actions[0], actions[1])
+        self.current_state.step()
+
+        reward_vector = [self.current_state.get_score(self.player1), self.current_state.get_score(self.player2)]
 
         # TODO: find if a player has won
-        self.winner = -1
+        if self.current_state.is_gameover():
+            self.winner = 0 if self.player1 == self.current_state.winner else 1
 
         # info should be kept empty
         info = {}
@@ -46,9 +77,12 @@ class CoolGameEnv(gym.Env):
         TODO: figure out what are the valid moves an agent can take.
         (i.e figure ability cooldowns / collision against map borders)
         """
+        available_moves = (self.player1 if player == 0 else self.player2).get_valid_moves(self.current_state)
+
         if self.winner != -1:
             return []
-        return [] # TODO
+        
+        return available_moves
 
     def is_over(self):
         return self.winner == -1
@@ -58,7 +92,7 @@ class CoolGameEnv(gym.Env):
         :param player: (int) player which we want to see if he / she is a winner
         :returns: winner from the perspective of the param player
         """
-        return player == self.winner
+        return self.current_state.get_score(self.player1 if player == 0 else self.player2)
 
     def render(self, mode='human'):
         # TODO: Here's where we would show the screen based on the game state
@@ -66,3 +100,5 @@ class CoolGameEnv(gym.Env):
             # This might be useful
             return pygame.surfarray.array3d(
                     pygame.display.get_surface()).astype(np.uint8)
+        elif mode == 'string': 
+            return self.current_state.board.test_print()

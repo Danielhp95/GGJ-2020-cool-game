@@ -105,6 +105,9 @@ game = Game(myboard, player1, player2)
 bot1Input = None
 bot2Input = None
 
+
+print(myboard.test_print())
+
 while not done:
 
     events = pygame.event.get()

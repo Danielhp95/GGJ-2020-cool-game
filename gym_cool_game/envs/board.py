@@ -85,3 +85,11 @@ class Board:
             bot.update_rotation(direction)
 
         return next_pos
+
+    def test_print(self):
+        grid_rep = ""
+
+        for i in range(0, len(self.grid)):
+            grid_rep += str(self.grid[i]) + "\n"
+
+        return grid_rep

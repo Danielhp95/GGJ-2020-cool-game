@@ -12,6 +12,15 @@ class Game:
         self.player2 = player2
         self.winner = None
 
+
+    def get_score(self, bot):
+        if self.is_gameover:
+            return 10000 if self.winner == bot else 0
+        return bot.health - self.opponent(bot).health
+
+    def opponent(self, bot):
+        return self.player1 if bot == self.player2 else self.player1
+
     # Advance the game state until an input is needed
     def step(self):
         while not self.is_waiting() and not self.is_gameover():
@@ -47,7 +56,7 @@ class Game:
 
     # is this input valid for this bot?
     def is_valid_for(self, bot, inp):
-        return inp in bot.get_moves(self)
+        return inp in bot.get_valid_moves(self)
 
     # activate specials
     def take_actions(self, player1_input, player2_input):
@@ -94,7 +103,7 @@ class Bot():
     def is_sleeping(self):
         return self.sleep > 0
 
-    def get_moves(self, state):
+    def get_valid_moves(self, state):
         moves = []
 
         if not self.is_sleeping():
