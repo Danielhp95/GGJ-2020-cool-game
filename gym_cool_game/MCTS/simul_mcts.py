@@ -7,21 +7,24 @@ def UCB1(node, child, exploration_constant=sqrt(2)):
     return child.wins / child.visits + exploration_constant * sqrt(log(node.visits) / child.visits)
 
 
-def selection_phase(nodes, state, selection_policy=UCB1, selection_policy_args=[]):
-    expanded = [False for n in nodes]
-    while not all(expanded):
+def selection_phase(nodes, state, selection_policy=UCB1, selection_policy_args=None):
+    if selection_policy_args is None:
+        selection_policy_args = []
+    expanded = [False for _ in nodes]
+    while not (all(expanded) or state.is_over()):
         moves, expanded = choose_moves(nodes, selection_policy, selection_policy_args)
         state.step(moves)
         nodes = [n.doStuff(moves, state) for n in nodes]
     return nodes
 
 
-def choose_moves(self, nodes, selection_policy, selection_policy_args):
+def choose_moves(nodes, selection_policy, selection_policy_args):
     expanded = []
     moves = []
     for n in nodes:
         if n.is_fully_expanded():
             expanded.append(False)
+       #     grand_children_nodes = [gc for ch in n.child_nodes for gc in ch.child_nodes]
             selected_node = sorted(n.child_nodes,
                                    key=lambda child: selection_policy(n, child, *selection_policy_args))[-1]
             moves.append(selected_node.move)
@@ -42,8 +45,9 @@ def backpropagation_phase(nodes, state):
         if n is not None:
             #TODO: get_result() returns True/False...we need a numeric score (evaluation) for
             # each player in the state
-            n.update(state.get_result(n.perspective_player))
-            backpropagation_phase(n.parent_node, state)
+            while n is not None:
+                n.update(state.get_result(n.perspective_player))
+                n = n.parent_node
 
 
 def action_selection_phase(nodes):
@@ -70,4 +74,7 @@ def MCTS_UCT(rootstate, itermax, exploration_factor_ucb1=sqrt(2), player_count =
         rollout_phase(state)
         backpropagation_phase(nodes, state)
 
+    for i, n in enumerate(root_nodes):
+        print(f'Player {i}')
+        print(n)
     return action_selection_phase(root_nodes)

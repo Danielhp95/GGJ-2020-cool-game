@@ -50,6 +50,9 @@ class CoolGameEnv(gym.Env):
             return []
         return [] # TODO
 
+    def is_over(self):
+        return self.winner == -1
+
     def get_result(self, player):
         """ 
         :param player: (int) player which we want to see if he / she is a winner
