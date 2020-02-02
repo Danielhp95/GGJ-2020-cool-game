@@ -212,13 +212,13 @@ while not done:
     # Render player names and scoreboard
 
     # Player 1
-    pygame.draw.rect(screen, (255, 0, 0), (10,40, player1.max_health, 30))  # NEW
-    pygame.draw.rect(screen, (0, 128, 0), (10,40, player1.health, 30))  # NEW
+    pygame.draw.rect(screen, (255, 0, 0), (10,40, (300/player1.max_health)*player1.max_health, 30))
+    pygame.draw.rect(screen, (0, 128, 0), (10,40, (300/player1.max_health)*player1.health, 30))
     screen.blit(player1name, player1_text_rect)
 
     # Player 2
-    pygame.draw.rect(screen, (255, 0, 0), (600,40, player1.max_health, 30))  # NEW
-    pygame.draw.rect(screen, (0, 128, 0), (600,40, player1.health, 30))  # NEW
+    pygame.draw.rect(screen, (255, 0, 0), (600,40, (300/player2.max_health)*player2.max_health, 30))
+    pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.health)*player2.health, 30))
     screen.blit(player2name, player2_text_rect)
 
     myboard.get_valid_moves(player1)

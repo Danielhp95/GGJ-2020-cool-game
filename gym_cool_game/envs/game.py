@@ -79,7 +79,7 @@ class Bot():
         self.name = str(name)
         self.curr_rotation = 1
         self.health = 10
-        self.max_health = 300
+        self.max_health = 10
 
     def tick(self, state):
         if self.sleep > 0:
