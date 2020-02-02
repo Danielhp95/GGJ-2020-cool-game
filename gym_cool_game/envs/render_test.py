@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 from game import Game, Bot
 from board import Board
 from valid_inputs import *
@@ -9,22 +10,9 @@ def test_print(grid):
         print(str(grid[i]))
 
 
-# ---------------------
-# Prepare game for play
-# --------------------
-
-player1 = Bot()
-player2 = Bot()
-player2.weight = 3
-player2.ticks_between_moves = 2
-player1.ticks_between_moves = 8
-myboard = Board(10)
-
-game = Game(myboard, player1, player2)
-
 
 # -----------------
-# Prepare pygame
+# Prepare pygame - must be done before sprites can be loaded
 # -----------------
 
 pygame.init()
@@ -63,6 +51,28 @@ done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
+
+
+# Setup images
+game_folder = os.path.dirname(__file__)
+img_folder = os.path.join(game_folder, 'images')
+spikyBot_img = pygame.image.load(os.path.join(img_folder, 'punkrobot2.png')).convert()
+blowTorchBot_img = pygame.image.load(os.path.join(img_folder, 'fireBot.png')).convert()
+
+
+# ---------------------
+# Prepare game for play
+# --------------------
+
+# Bots are now initialized with a sprite img
+player1 = Bot("mamaBot",spikyBot_img)
+player2 = Bot("babyBot",blowTorchBot_img)
+player2.weight = 3
+player2.ticks_between_moves = 2
+player1.ticks_between_moves = 8
+myboard = Board(10)
+
+game = Game(myboard, player1, player2)
 
 
 # ------------------------
@@ -130,8 +140,13 @@ while not done:
     #   which could be far in the future. We ideally want to render each tick rather than
     #   rendering only the states in which the players can take actions.
     game.step()
- 
+
+    # Background color
     screen.fill(BLACK)
+
+    # Set size of sprite to the size of one tile
+    player1.image = pygame.transform.scale(player1.image, (WIDTH, HEIGHT))
+    player2.image = pygame.transform.scale(player2.image, (WIDTH, HEIGHT))
 
     # Draw the grid
     for row in range(1,len(myboard.grid)-1):
@@ -139,14 +154,38 @@ while not done:
             color = WHITE
             if myboard.grid[row][column] == player1:
                 color = BOT_COLOR_A_FADED if player1.is_sleeping() else BOT_COLOR_A
+                pygame.draw.rect(screen,
+                                 color,
+                                 [(MARGIN + WIDTH) * column + MARGIN,
+                                  (MARGIN + HEIGHT) * row + MARGIN,
+                                  WIDTH,
+                                  HEIGHT])
+                # I am VERY confident that I'm doing something wrong here, but it does work - sprite is re-rendered at the correct location
+                player1.rect = [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN]
+                player1sprite = pygame.sprite.Group(player1)
+
             elif myboard.grid[row][column] == player2:
                 color = BOT_COLOR_B_FADED if player2.is_sleeping() else BOT_COLOR_B
+                pygame.draw.rect(screen,
+                                 color,
+                                 [(MARGIN + WIDTH) * column + MARGIN,
+                                  (MARGIN + HEIGHT) * row + MARGIN,
+                                  WIDTH,
+                                  HEIGHT])
+                player2.rect = [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN]
+                player2sprite = pygame.sprite.Group(player2)
+
+            # All other non-player tiles
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
                               (MARGIN + HEIGHT) * row + MARGIN,
                               WIDTH,
                               HEIGHT])
+
+
+    player1sprite.draw(screen)
+    player2sprite.draw(screen)
 
     # Limit to 60 frames per second
     clock.tick(60)
@@ -157,4 +196,3 @@ while not done:
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
 pygame.quit()
-

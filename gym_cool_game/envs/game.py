@@ -1,4 +1,5 @@
 from valid_inputs import *
+import pygame
 
 class Game:
 
@@ -59,15 +60,22 @@ class Game:
             self.player2.after_move()
 
 
-class Bot:
+class Bot(pygame.sprite.Sprite):
 
-    def __init__(self, name=""):
+    def __init__(self, name="", image = None):
+        pygame.sprite.Sprite.__init__(self)
+        screen = pygame.display.get_surface()
+        self.image = image
+        self.rect = image.get_rect()
         self.ticks_between_moves = 1
         self.sleep = 0
         self.weight = 1
         self.pos_x = -100
         self.pos_y = -100
         self.name = str(name)
+        self.curr_rotation = 0
+        self.flipped_vert = False
+        self.flipped_horiz = False
 
     def tick(self, state):
         if self.sleep > 0:

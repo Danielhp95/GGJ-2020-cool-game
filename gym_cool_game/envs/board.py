@@ -1,5 +1,6 @@
 import numpy as np
 from valid_inputs import *
+import pygame
 
 class Board:
 
@@ -47,43 +48,119 @@ class Board:
 
     def resolve_moves(self, bot1, direction1, bot2, direction2):
 
+        # ------------------------------------
         # Figure out where bot1 is moving to
+        # ------------------------------------
         if direction1 == DIRECTION_LEFT and bot1.pos_y > 1 and self.grid[bot1.pos_x][bot1.pos_y-1] == 0:  # LEFT
             bot1.next_move_y = bot1.pos_y - 1
             bot1.next_move_x = bot1.pos_x
+            bot1.image = pygame.transform.rotate(bot1.image, 0-bot1.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot1.flipped_vert == True:
+                bot1.image = pygame.transform.flip(bot1.image,False,True)
+                bot1.flipped_vert = False
+
+            bot1.rect = bot1.image.get_rect()
+            bot1.curr_rotation = 0
 
         elif direction1 == DIRECTION_DOWN and bot1.pos_x < len(self.grid) - 2 and self.grid[bot1.pos_x+1][bot1.pos_y] == 0:  # DOWN
             bot1.next_move_x = bot1.pos_x + 1
             bot1.next_move_y = bot1.pos_y
+            bot1.image = pygame.transform.rotate(bot1.image, 90-bot1.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot1.flipped_horiz == True:
+                bot1.image = pygame.transform.flip(bot1.image,True,False)
+                bot1.flipped_horiz = False
+
+            bot1.rect = bot1.image.get_rect()
+            bot1.curr_rotation = 90
 
         elif direction1 == DIRECTION_RIGHT and bot1.pos_y < len(self.grid) - 2 and self.grid[bot1.pos_x][bot1.pos_y+1] == 0:  # RIGHT
-
             bot1.next_move_y = bot1.pos_y + 1
             bot1.next_move_x = bot1.pos_x
+            bot1.image = pygame.transform.rotate(bot1.image, 180-bot1.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot1.flipped_vert == False:
+                bot1.image = pygame.transform.flip(bot1.image,False,True)
+                bot1.flipped_vert = True
+
+            bot1.rect = bot1.image.get_rect()
+            bot1.curr_rotation = 180
+
 
         elif direction1 == DIRECTION_UP and bot1.pos_x > 1 and self.grid[bot1.pos_x-1][bot1.pos_y] == 0:  # UP
             bot1.next_move_x = bot1.pos_x - 1
             bot1.next_move_y = bot1.pos_y
+            bot1.image = pygame.transform.rotate(bot1.image, 270-bot1.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot1.flipped_horiz == True:
+                bot1.image = pygame.transform.flip(bot1.image,True,False)
+                bot1.flipped_horiz = False
+
+            bot1.rect = bot1.image.get_rect()
+            bot1.curr_rotation = 270
         else:
             bot1.next_move_x = bot1.pos_x
             bot1.next_move_y = bot1.pos_y
 
+        # ------------------------------
         # Figure out where bot2 is moving to
+        # ------------------------------
         if direction2 == DIRECTION_LEFT and bot2.pos_y > 1 and self.grid[bot2.pos_x][bot2.pos_y-1] == 0:  # LEFT
             bot2.next_move_y = bot2.pos_y - 1
             bot2.next_move_x = bot2.pos_x
+            bot2.image = pygame.transform.rotate(bot2.image, 0-bot2.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot2.flipped_vert == True:
+                bot2.image = pygame.transform.flip(bot2.image,False,True)
+                bot2.flipped_vert = False
+
+            bot2.rect = bot2.image.get_rect()
+            bot2.curr_rotation = 0
 
         elif direction2 == DIRECTION_DOWN and bot2.pos_x < len(self.grid) - 2 and self.grid[bot2.pos_x+1][bot2.pos_y] == 0:  # DOWN
             bot2.next_move_x = bot2.pos_x + 1
             bot2.next_move_y = bot2.pos_y
+            bot2.image = pygame.transform.rotate(bot2.image, 90-bot2.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot2.flipped_horiz == True:
+                bot2.image = pygame.transform.flip(bot1.image,True,False)
+                bot2.flipped_horiz = False
+
+            bot2.rect = bot2.image.get_rect()
+            bot2.curr_rotation = 90
 
         elif direction2 == DIRECTION_RIGHT and bot2.pos_y < len(self.grid) - 2 and self.grid[bot2.pos_x][bot2.pos_y+1] == 0:  # RIGHT
             bot2.next_move_y = bot2.pos_y + 1
             bot2.next_move_x = bot2.pos_x
+            bot2.image = pygame.transform.rotate(bot2.image, 180-bot2.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot2.flipped_vert == False:
+                bot2.image = pygame.transform.flip(bot2.image,False,True)
+                bot2.flipped_vert = True
+
+            bot2.rect = bot2.image.get_rect()
+            bot2.curr_rotation = 180
 
         elif direction2 == DIRECTION_UP and bot2.pos_x > 1 and self.grid[bot2.pos_x-1][bot2.pos_y] == 0:  # UP
             bot2.next_move_x = bot2.pos_x - 1
             bot2.next_move_y = bot2.pos_y
+            bot2.image = pygame.transform.rotate(bot2.image, 270-bot2.curr_rotation)
+
+            # So that the sprite does not appear upside down
+            if bot2.flipped_horiz == True:
+                bot2.image = pygame.transform.flip(bot2.image,True,False)
+                bot2.flipped_horiz = False
+
+            bot2.rect = bot2.image.get_rect()
+            bot2.curr_rotation = 270
 
         else:
             bot2.next_move_x = bot2.pos_x
