@@ -1,7 +1,8 @@
 import pygame
 import sys
-from game import Game,Bot
+from game import Game, Bot
 from board import Board
+from valid_inputs import *
 
 def test_print(grid):
     for i in range(0, len(grid)):
@@ -12,12 +13,14 @@ def test_print(grid):
 # Prepare game for play
 # --------------------
 
-babyBot = Bot()
-mamaBot = Bot()
+player1 = Bot()
+player2 = Bot()
+player2.weight = 3
+player2.ticks_between_moves = 2
+player1.ticks_between_moves = 8
 myboard = Board(10)
 
-game = Game(myboard, babyBot, mamaBot)
-
+game = Game(myboard, player1, player2)
 
 
 # -----------------
@@ -31,7 +34,15 @@ screen = pygame.display.set_mode((640,480))
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 RED = (255, 0, 0)
+
+BOT_COLOR_A = (0, 255, 0)
+BOT_COLOR_A_FADED = (60, 100, 60)
+BOT_COLOR_B = (0, 0, 255)
+BOT_COLOR_B_FADED = (60, 60, 100)
+
+
 
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = 20
@@ -45,13 +56,14 @@ WINDOW_SIZE = [255, 255]
 screen = pygame.display.set_mode(WINDOW_SIZE)
 
 # Set title of screen
-pygame.display.set_caption("If this works, it's a miracle")
+pygame.display.set_caption("Bot Games")
 
 # Loop until the user clicks the close button.
 done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
+
 
 # ------------------------
 # Main Program Loop
@@ -71,33 +83,53 @@ while not done:
             keys_pressed = pygame.key.get_pressed()
 
             if keys_pressed[pygame.K_LEFT]:
-                bot1Input = 3
+                bot1Input = DIRECTION_LEFT
 
             if keys_pressed[pygame.K_RIGHT]:
-                bot1Input = 4
+                bot1Input = DIRECTION_RIGHT
 
             if keys_pressed[pygame.K_UP]:
-                bot1Input = 1
+                bot1Input = DIRECTION_UP
 
             if keys_pressed[pygame.K_DOWN]:
-                bot1Input = 2
+                bot1Input = DIRECTION_DOWN
+
+            if keys_pressed[pygame.K_RETURN]:
+                bot1Input = ACTION
 
             if keys_pressed[pygame.K_a]:
-                bot2Input = 3
+                bot2Input = DIRECTION_LEFT
 
             if keys_pressed[pygame.K_d]:
-                bot2Input = 4
+                bot2Input = DIRECTION_RIGHT
 
             if keys_pressed[pygame.K_w]:
-                bot2Input = 1
+                bot2Input = DIRECTION_UP
 
             if keys_pressed[pygame.K_s]:
-                bot2Input = 2
+                bot2Input = DIRECTION_DOWN
 
-    if bot1Input and bot2Input:
-        game.make_moves(bot1Input, bot2Input)
+            if keys_pressed[pygame.K_SPACE]:
+                bot2Input = ACTION
+
+
+
+    if (not game.is_waiting_for(player1) or bot1Input) and (not game.is_waiting_for(player2) or bot2Input):
+        if not game.is_valid_for(player1, bot1Input):
+            bot1Input = None
+
+        if not game.is_valid_for(player2, bot2Input):
+            bot2Input = None
+
+        game.handle_input(bot1Input, bot2Input)
+
         bot1Input = None
         bot2Input = None
+
+    # TODO: This will advance the game state all the way to the next input choice
+    #   which could be far in the future. We ideally want to render each tick rather than
+    #   rendering only the states in which the players can take actions.
+    game.step()
  
     screen.fill(BLACK)
 
@@ -105,11 +137,10 @@ while not done:
     for row in range(1,len(myboard.grid)-1):
         for column in range(1,len(myboard.grid)-1):
             color = WHITE
-            if myboard.grid[row][column] == babyBot:
-                # print(str(babyBot.pos_x) + "," + str(babyBot.pos_y))
-                color = GREEN
-            elif myboard.grid[row][column] == mamaBot:
-                color = RED
+            if myboard.grid[row][column] == player1:
+                color = BOT_COLOR_A_FADED if player1.is_sleeping() else BOT_COLOR_A
+            elif myboard.grid[row][column] == player2:
+                color = BOT_COLOR_B_FADED if player2.is_sleeping() else BOT_COLOR_B
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
