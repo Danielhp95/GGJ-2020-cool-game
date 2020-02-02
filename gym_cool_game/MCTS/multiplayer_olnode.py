@@ -78,7 +78,7 @@ class MultiplayerOpenLoopNode:
 
     def __repr__(self, indent=0, ignore_chance=True):
         s = ''
-        if self.is_chance_node and ignore_chance:
+        if self.parent_node is not None and self.parent_node.is_chance_node and ignore_chance:
             pass
         else:
             s += reduce(lambda acc, x: x + acc, ['.' for i in range(indent)], '') \
