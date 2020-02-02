@@ -29,17 +29,16 @@ class SawBot(Bot):
 	def tick_bot(self, state):
 
 		self.active_time -= 1
-		# if ability is active, get adjacent cells
-		if self.active_time > self.cooldown:
-			for x, y in [(self.pos_x + i, self.pos_y + j)
-						 for i in (-1, 0, 1) for j in (-1, 0, 1)
-						 if i != 0 or j != 0]:
-				# check if bot exists
-				cell = state.board.get(x, y)
-				if hasattr(cell, 'health'):
-					# apply damage
-					cell.health -= self.dmg
-					break
+		# get adjacent cells
+		for x, y in [(self.pos_x + i, self.pos_y + j)
+					 for i in (-1, 0, 1) for j in (-1, 0, 1)
+					 if i != 0 or j != 0]:
+			# check if bot exists
+			cell = state.board.get(x, y)
+			if hasattr(cell, 'health'):
+				# apply damage
+				cell.health -= self.dmg
+				break
 
 
 class NailBot(Bot):
