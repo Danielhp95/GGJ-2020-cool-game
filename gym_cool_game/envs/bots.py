@@ -1,4 +1,4 @@
-from game import Bot
+from .game import Bot
 
 
 class SawBot(Bot):

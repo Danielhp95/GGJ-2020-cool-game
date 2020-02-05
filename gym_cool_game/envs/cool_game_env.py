@@ -2,9 +2,13 @@ from typing import List
 from copy import deepcopy
 import numpy as np
 import gym
+from gym.spaces import Discrete, Box, Tuple
 import pygame
 
-from bots import SpikeBot, TorchBot
+from .game import Game
+from .board import Board
+
+from .bots import SawBot, TorchBot
 
 BOT_TYPE_SPIKE = 0
 BOT_TYPE_TORCH = 1
@@ -14,10 +18,18 @@ class CoolGameEnv(gym.Env):
 
     def __init__(self, botA_type=0, botB_type=1, board_size=10):
         # TODO: figure out params
+
+        # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
+        # And a 5th "Action", which is bot dependant
+        self.action_space = Tuple([Discrete(5), Discrete(5)])
+        single_agent_observation = Box(shape=(board_size, board_size),
+                                       low=0, high=5, dtype=int)
+        self.observation_space = Tuple([single_agent_observation,
+                                        single_agent_observation])
+
         self.botA_type = botA_type
         self.botB_type = botB_type
         self.board_size = board_size
-        self.current_state = None
         self.reset()
 
     def reset(self):
@@ -30,14 +42,13 @@ class CoolGameEnv(gym.Env):
 
     def get_bot(self, bot_type):
         if bot_type == BOT_TYPE_SPIKE:
-            return SpikeBot()
+            return SawBot()
         elif bot_type == BOT_TYPE_TORCH:
             return TorchBot()
         elif bot_type == BOT_TYPE_NAIL:
             return NailBot()
         else:
-            print("ERROR: Invalid Bot Type")
-            return SpikeBot()
+            raise ValueError("ERROR: Invalid Bot Type")
 
     def clone(self):
         """ 

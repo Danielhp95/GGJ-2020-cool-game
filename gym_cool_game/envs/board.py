@@ -1,5 +1,5 @@
 import numpy as np
-from valid_inputs import *
+from .valid_inputs import *
 
 class Board:
 

@@ -1,4 +1,4 @@
-from valid_inputs import *
+from .valid_inputs import *
 import pygame
 
 class Game:
