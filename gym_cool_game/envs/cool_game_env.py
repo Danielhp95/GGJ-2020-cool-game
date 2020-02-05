@@ -16,14 +16,22 @@ BOT_TYPE_NAIL = 1
 
 class CoolGameEnv(gym.Env):
 
-    def __init__(self, botA_type=0, botB_type=1, board_size=10):
-        # TODO: figure out params
-
+    def __init__(self,
+                 botA_type: int = 0, botB_type: int = 1,
+                 board_size: int = 10,
+                 p1_starting_position: List = [2,2],
+                 p2_starting_position: List = [7,7]
+                 ):
         # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
         # And a 5th "Action", which is bot dependant
+
+        # Game params
+        self.p1_starting_position = p1_starting_position
+        self.p2_starting_position = p2_starting_position
+
         self.action_space = Tuple([Discrete(5), Discrete(5)])
         single_agent_observation = Box(shape=(board_size, board_size),
-                                       low=0, high=5, dtype=int)
+                                       low=0, high=5, dtype=int) # TODO: find maximum number of values
         self.observation_space = Tuple([single_agent_observation,
                                         single_agent_observation])
 
@@ -37,8 +45,8 @@ class CoolGameEnv(gym.Env):
         self.player1 = self.get_bot(self.botA_type)
         self.player2 = self.get_bot(self.botB_type)
         self.board = Board(self.board_size)
-        self.current_state = Game(self.board, self.player1, self.player2)
-
+        self.current_state = Game(self.board, self.player1, self.player2,
+                                  self.p1_starting_position, self.p2_starting_position)
         return np.array([[],[]]) # TODO: must return observation for each agent
 
     def get_bot(self, bot_type):
@@ -52,7 +60,7 @@ class CoolGameEnv(gym.Env):
             raise ValueError("ERROR: Invalid Bot Type")
 
     def clone(self):
-        """ 
+        """
         Creates a deep copy of the game state.
         NOTE: it is _really_ important that a copy is used during simulations
               Because otherwise MCTS would be operating on the real game board.
@@ -63,7 +71,7 @@ class CoolGameEnv(gym.Env):
 
 
     def step(self, actions: List):
-        """ 
+        """
         returns: (obsvervations: List, rewards: List, done: bool)
         :param actions: List of two elements, containing one action for each player
         """
@@ -82,7 +90,7 @@ class CoolGameEnv(gym.Env):
         info = {}
         return [[], []], reward_vector, \
                self.winner != -1, info
-            
+
     def get_moves(self, player: int):
         """
         :param player: (int) player for whom we wish to generate moves
@@ -94,14 +102,14 @@ class CoolGameEnv(gym.Env):
 
         if self.winner != -1:
             return []
-        
+
         return available_moves
 
     def is_over(self):
         return self.winner == -1
 
     def get_result(self, player):
-        """ 
+        """
         :param player: (int) player which we want to see if he / she is a winner
         :returns: winner from the perspective of the param player
         """
@@ -113,5 +121,5 @@ class CoolGameEnv(gym.Env):
             # This might be useful
             return pygame.surfarray.array3d(
                     pygame.display.get_surface()).astype(np.uint8)
-        elif mode == 'string': 
+        elif mode == 'string':
             return self.current_state.board.test_print()
