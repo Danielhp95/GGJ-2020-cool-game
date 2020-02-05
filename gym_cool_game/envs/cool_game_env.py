@@ -33,6 +33,7 @@ class CoolGameEnv(gym.Env):
         self.reset()
 
     def reset(self):
+        self.winner = -1 # Values: [-1, 0, 1]
         self.player1 = self.get_bot(self.botA_type)
         self.player2 = self.get_bot(self.botB_type)
         self.board = Board(self.board_size)
@@ -70,7 +71,8 @@ class CoolGameEnv(gym.Env):
         self.current_state.handle_input(actions[0], actions[1])
         self.current_state.step()
 
-        reward_vector = [self.current_state.get_score(self.player1), self.current_state.get_score(self.player2)]
+        reward_vector = [self.current_state.get_score(self.player1),
+                         self.current_state.get_score(self.player2)]
 
         # TODO: find if a player has won
         if self.current_state.is_gameover():
