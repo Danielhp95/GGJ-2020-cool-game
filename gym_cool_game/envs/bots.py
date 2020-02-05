@@ -1,5 +1,7 @@
+from .game_params import NailBotParams, SawBotParams, TorchParams
+
 class Bot():
-    def __init__(self, name="", ticks_between_moves = 1):
+    def __init__(self, name: str, ticks_between_moves: int, weight: int):
         self.ticks_between_moves = ticks_between_moves
         self.sleep = 0
         self.weight = 1
@@ -47,24 +49,18 @@ class Bot():
         pass
 
     def __repr__(self):
-        return self.name if self.name else "."
+        return self.name[0]
 
 class SawBot(Bot):
 
-    def __init__(self,
-                 dmg_min=1,
-                 dmg_max=5,
-                 weight=3,
-                 duration=3,
-                 cooldown=5,
-                 ticks_between_moves=1):
-        Bot.__init__(self, 'SawBot')
-        self.dmg_min = dmg_min
-        self.dmg = dmg_min
-        self.dmg_max = dmg_max
-        self.weight = weight
-        self.duration = duration
-        self.cooldown = cooldown
+    def __init__(self, params: SawBotParams):
+        super(SawBot, self).__init__('SawBot', params.ticks_between_moves, params.weight)
+        self.dmg_min = params.dmg_min
+        self.dmg_max = params.dmg_max
+        self.duration = params.duration
+        self.cooldown = params.cooldown
+
+        self.dmg = self.dmg_min
         self.active_time = 0
 
     def act(self):
@@ -88,18 +84,13 @@ class SawBot(Bot):
 
 class NailBot(Bot):
 
-    def __init__(self,
-                 dmg=1,
-                 weight=1,
-                 bullet_speed=3,
-                 cooldown=2,
-                 ticks_between_moves=3):
-        Bot.__init__(self, 'NailBot')
+    def __init__(self, params: NailBotParams):
+        super(NailBot, self).__init__('NailBot', params.ticks_between_moves, params.weight)
 
-        self.dmg = dmg
-        self.weight = weight
-        self.bullet_speed = bullet_speed
-        self.cooldown = cooldown
+        self.dmg = params.dmg
+        self.bullet_speed = params.bullet_speed
+        self.cooldown = params.cooldown
+
         self.ability_counter = 0
 
     def act(self):
@@ -113,20 +104,14 @@ class NailBot(Bot):
 
 class TorchBot(Bot):
 
-    def __init__(self,
-                 dmg=2,
-                 weight=2,
-                 torch_range=2,
-                 duration=2,
-                 cooldown=3,
-                 ticks_between_moves=2):
-        Bot.__init__(self, 'Torch')
+    def __init__(self, params: TorchParams):
+        super(TorchBot, self).__init__('TorchBot', params.ticks_between_moves, params.weight)
 
-        self.dmg = dmg
-        self.weight = weight
-        self.torch_range = torch_range
-        self.duration = duration
-        self.cooldown = cooldown
+        self.dmg = params.dmg
+        self.torch_range = params.torch_range
+        self.duration = params.duration
+        self.cooldown = params.cooldown
+
         self.active_time = 0
         self.torch_cells = []
 
