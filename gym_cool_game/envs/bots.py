@@ -2,6 +2,7 @@ from .valid_inputs import DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_RIGHT, DIREC
 from .game_params import NailBotParams, SawBotParams, TorchParams
 
 class Bot():
+
     def __init__(self, name: str, ticks_between_moves: int, weight: int):
         self.ticks_between_moves = ticks_between_moves
         self.sleep = 0
@@ -21,7 +22,6 @@ class Bot():
 
     def update_rotation(self, direction):
         self.curr_rotation = direction
-
 
     def is_sleeping(self):
         return self.sleep > 0
@@ -55,7 +55,7 @@ class Bot():
 class SawBot(Bot):
 
     def __init__(self, params: SawBotParams):
-        super(SawBot, self).__init__('SawBot', params.ticks_between_moves, params.weight)
+        Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight)
         self.dmg_min = params.dmg_min
         self.dmg_max = params.dmg_max
         self.duration = params.duration
@@ -106,7 +106,7 @@ class NailBot(Bot):
 class TorchBot(Bot):
 
     def __init__(self, params: TorchParams):
-        super(TorchBot, self).__init__('TorchBot', params.ticks_between_moves, params.weight)
+        Bot.__init__(self, 'TorchBot', params.ticks_between_moves, params.weight)
 
         self.dmg = params.dmg
         self.torch_range = params.torch_range

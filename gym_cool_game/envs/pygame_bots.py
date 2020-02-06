@@ -1,9 +1,10 @@
 # Pygame specific classes.
 import pygame
-from game import Bot
-from bots import *
+from .bots import *
+
 
 class SpriteBot(Bot, pygame.sprite.Sprite):
+
     def __init__(self, image = None):
         pygame.sprite.Sprite.__init__(self)
         screen = pygame.display.get_surface()
@@ -31,19 +32,20 @@ class SpriteBot(Bot, pygame.sprite.Sprite):
     def to_angle(self, direction):
         return 90 * (direction - 1)
 
+
 class NailBotPyg(NailBot, SpriteBot):
-	def __init__(self, image, **kwargs):
+	def __init__(self, image, params):
 		SpriteBot.__init__(self, image)
-		NailBot.__init__(self, **kwargs)
+		NailBot.__init__(self, params)
 
 
 class SawBotPyg(SawBot, SpriteBot):
-	def __init__(self, image, **kwargs):
+	def __init__(self, image, params):
 		SpriteBot.__init__(self, image)
-		SawBot.__init__(self, **kwargs)
+		SawBot.__init__(self, params)
 
 
 class TorchBotPyg(TorchBot, SpriteBot):
-	def __init__(self, image, **kwargs):
+	def __init__(self, image, params):
 		SpriteBot.__init__(self, image)
-		TorchBot.__init__(self, **kwargs)
+		TorchBot.__init__(self, params)
