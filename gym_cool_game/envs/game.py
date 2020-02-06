@@ -2,6 +2,7 @@ from typing import List
 from .valid_inputs import *
 import pygame
 
+
 class Game:
 
     def __init__(self, board, player1, player2,

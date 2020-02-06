@@ -1,6 +1,10 @@
 from .valid_inputs import DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_RIGHT, DIRECTION_UP, ACTION, NONE_ACTION
 from .game_params import NailBotParams, SawBotParams, TorchParams
 
+BOT_TYPE_SPIKE = 0
+BOT_TYPE_TORCH = 1
+BOT_TYPE_NAIL = 1
+
 class Bot():
 
     def __init__(self, name: str, ticks_between_moves: int, weight: int):
