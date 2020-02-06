@@ -137,7 +137,7 @@ class CoolGameEnv(gym.Env):
         return available_moves
 
     def is_over(self):
-        return self.winner == -1
+        return self.winner != -1
 
     def get_result(self, player):
         """

@@ -29,7 +29,7 @@ class Game:
             self.tick()
 
     def is_gameover(self):
-        return self.winner
+        return self.winner != -1
 
     # Is the game waiting to recieve ANY input?
     def is_waiting(self):
