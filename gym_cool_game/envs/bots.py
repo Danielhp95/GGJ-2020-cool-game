@@ -1,3 +1,4 @@
+from .valid_inputs import DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_RIGHT, DIRECTION_UP, ACTION, NONE_ACTION
 from .game_params import NailBotParams, SawBotParams, TorchParams
 
 class Bot():
@@ -26,7 +27,7 @@ class Bot():
         return self.sleep > 0
 
     def get_valid_moves(self, state):
-        moves = []
+        moves = [NONE_ACTION]
 
         if not self.is_sleeping():
             moves += self.get_moves_bot(state) + self.get_actions_bot(state)

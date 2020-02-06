@@ -41,7 +41,7 @@ class Board:
 
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
-        valid_moves = []
+        valid_moves = [NONE_ACTION]
 
         if self.grid[bot.pos_x-1][bot.pos_y] == 0:
             valid_moves.append(DIRECTION_LEFT)
