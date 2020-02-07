@@ -100,7 +100,6 @@ class CoolGameEnv(gym.Env):
         returns: (obsvervations: List, rewards: List, done: bool)
         :param actions: List of two elements, containing one action for each player
         """
-
         self.current_state.handle_input(actions[0], actions[1])
         self.current_state.step()
 

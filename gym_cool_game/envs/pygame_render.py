@@ -8,7 +8,6 @@ class BotSprite(pygame.sprite.Sprite):
 
     def __init__(self, image = None):
         pygame.sprite.Sprite.__init__(self)
-        screen = pygame.display.get_surface()
         self.image = image
         self.rect = image.get_rect()
 
@@ -96,7 +95,7 @@ class PygameRender():
         player1_sprite = self.get_sprite(0)
         player2_sprite = self.get_sprite(1)
         player1_sprite.image = pygame.transform.scale(player1_sprite.image, (WIDTH, HEIGHT))
-        player2_sprite.image = pygame.transform.scale(player1_sprite.image, (WIDTH, HEIGHT))
+        player2_sprite.image = pygame.transform.scale(player2_sprite.image, (WIDTH, HEIGHT))
 
         # Draw the grid
         for row in range(1,len(self.game.board.grid)-1):
