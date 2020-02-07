@@ -10,7 +10,6 @@ class Board:
 
     # get cell at (x, y)
     def get(self, x, y):
-
         try:
             cell = self.grid[x][y]
         except:

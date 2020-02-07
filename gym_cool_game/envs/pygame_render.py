@@ -11,6 +11,14 @@ class BotSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = image.get_rect()
 
+
+class FlameSprite(pygame.sprite.Sprite):
+
+    def __init__(self, image = None):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = image.get_rect()
+
 class PygameRender():
 
     def __init__(self, environment):
@@ -21,10 +29,23 @@ class PygameRender():
         self.spikyBot_img = pygame.image.load(os.path.join(img_folder, 'punkrobot2.png')).convert_alpha()
         self.blowTorchBot_img = pygame.image.load(os.path.join(img_folder, 'fireBot.png')).convert_alpha()
         # self.nailBot_img = pygame.image.load(os.path.join(img_folder, 'nailBot.png')).convert_alpha()
+        self.flame_img = pygame.image.load(os.path.join(img_folder, 'flame.png')).convert_alpha()
+        slice
 
         self.env = environment
         self.game = environment.current_state
 
+        # This sets the WIDTH and HEIGHT of each grid location
+        self.WIDTH = 80
+        self.HEIGHT = 80
+
+        # This sets the margin between each cell
+        self.MARGIN = 5
+
+    def create_flame_sprit(self) -> FlameSprite:
+        sprite = FlameSprite(self.flame_img)
+        sprite.image = pygame.transform.scale(sprite.image, (self.WIDTH, self.HEIGHT))
+        return sprite
 
     def get_sprite(self, player_index):
         if player_index == 0:
@@ -55,19 +76,12 @@ class PygameRender():
         BOT_COLOR_B = (0, 0, 255)
         BOT_COLOR_B_FADED = (60, 60, 100)
 
-        # This sets the WIDTH and HEIGHT of each grid location
-        WIDTH = 80
-        HEIGHT = 80
-
-        # This sets the margin between each cell
-        MARGIN = 5
-
         # Set the HEIGHT and WIDTH of the screen
         WINDOW_SIZE = [1000, 1000]
         screen = pygame.display.set_mode(WINDOW_SIZE)
 
         # Set title of screen
-        pygame.display.set_caption("Bot Game")
+        pygame.display.set_caption("Cool Bot Game")
 
         # Setup font
         fonts_folder = os.path.join(self.game_folder,'fonts')
@@ -94,8 +108,8 @@ class PygameRender():
         # Set size of sprite to the size of one tile
         player1_sprite = self.get_sprite(0)
         player2_sprite = self.get_sprite(1)
-        player1_sprite.image = pygame.transform.scale(player1_sprite.image, (WIDTH, HEIGHT))
-        player2_sprite.image = pygame.transform.scale(player2_sprite.image, (WIDTH, HEIGHT))
+        player1_sprite.image = pygame.transform.scale(player1_sprite.image, (self.WIDTH, self.HEIGHT))
+        player2_sprite.image = pygame.transform.scale(player2_sprite.image, (self.WIDTH, self.HEIGHT))
 
         # Draw the grid
         for row in range(1,len(self.game.board.grid)-1):
@@ -105,36 +119,46 @@ class PygameRender():
                     color = BOT_COLOR_A_FADED if player1.is_sleeping() else BOT_COLOR_A
                     pygame.draw.rect(screen,
                                      color,
-                                     [(MARGIN + WIDTH) * column + MARGIN,
-                                      (MARGIN + HEIGHT) * row + MARGIN,
-                                      WIDTH,
-                                      HEIGHT])
+                                     [(self.MARGIN + self.WIDTH) * column + self.MARGIN,
+                                      (self.MARGIN + self.HEIGHT) * row + self.MARGIN,
+                                      self.WIDTH,
+                                      self.HEIGHT])
                     # I am VERY confident that I'm doing something wrong here, but it does work - sprite is re-rendered at the correct location
-                    player1_sprite.rect = [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN]
+                    player1_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
                     player1sprite = pygame.sprite.Group(player1_sprite)
 
                 elif self.game.board.grid[row][column] == player2:
                     color = BOT_COLOR_B_FADED if player2.is_sleeping() else BOT_COLOR_B
                     pygame.draw.rect(screen,
                                      color,
-                                     [(MARGIN + WIDTH) * column + MARGIN,
-                                      (MARGIN + HEIGHT) * row + MARGIN,
-                                      WIDTH,
-                                      HEIGHT])
-                    player2_sprite.rect = [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN]
+                                     [(self.MARGIN + self.WIDTH) * column + self.MARGIN,
+                                      (self.MARGIN + self.HEIGHT) * row + self.MARGIN,
+                                      self.WIDTH,
+                                      self.HEIGHT])
+                    player2_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
                     player2sprite = pygame.sprite.Group(player2_sprite)
 
                 # All other non-player tiles
                 pygame.draw.rect(screen,
                                  color,
-                                 [(MARGIN + WIDTH) * column + MARGIN,
-                                  (MARGIN + HEIGHT) * row + MARGIN,
-                                  WIDTH,
-                                  HEIGHT])
+                                 [(self.MARGIN + self.WIDTH) * column + self.MARGIN,
+                                  (self.MARGIN + self.HEIGHT) * row + self.MARGIN,
+                                  self.WIDTH,
+                                  self.HEIGHT])
 
         # Render players
         player1sprite.draw(screen)
         player2sprite.draw(screen)
+
+        # Render flames from TorchBot
+        for p in [player1, player2]:
+            if not isinstance(p, TorchBot): continue
+            for row, column in p.torch_cells:
+                flame_sprite = self.create_flame_sprit()
+                flame_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
+                flame_sprite_group = pygame.sprite.Group(flame_sprite)
+                flame_sprite_group.draw(screen)
+
 
         # Render player names and scoreboard
 
