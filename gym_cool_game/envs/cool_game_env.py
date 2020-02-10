@@ -1,3 +1,4 @@
+import warnings
 from typing import List
 from copy import deepcopy
 import numpy as np
@@ -8,6 +9,7 @@ from .game import Game
 from .board import Board
 from .pygame_render import PygameRender
 from .bots import *
+from .valid_inputs import *
 from .game_params import (GameParams, TorchParams, SawBotParams, NailBotParams,
                           construct_game_params)
 
@@ -27,15 +29,14 @@ class CoolGameEnv(gym.Env):
                  torch_ticks_between_moves=2,
                  # SawBot parameters 
                  saw_dmg_min=1,
-                 saw_dmg_max=5,
+                 saw_dmg_max=2,
                  saw_weight=3,
                  saw_duration=3,
                  saw_cooldown=5,
                  saw_ticks_between_moves=1,
                  # NaileBot parameters
-                 nail_dmg=1,
+                 nail_dmg=3,
                  nail_weight=1,
-                 nail_bullet_speed=3,
                  nail_cooldown=2,
                  nail_ticks_between_moves=3):
         # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
@@ -56,7 +57,7 @@ class CoolGameEnv(gym.Env):
                 torch_cooldown, torch_ticks_between_moves,
                 saw_dmg_min, saw_dmg_max, saw_weight, saw_duration,
                 saw_cooldown, saw_ticks_between_moves,
-                nail_dmg, nail_weight, nail_bullet_speed,
+                nail_dmg, nail_weight,
                 nail_cooldown, nail_ticks_between_moves)
 
         self.botA_type = botA_type
@@ -72,7 +73,10 @@ class CoolGameEnv(gym.Env):
         self.board = Board(self.board_size)
         self.current_state = Game(self.board, self.player1, self.player2,
                                   self.p1_starting_position, self.p2_starting_position)
-        return np.array([[],[]]) # TODO: must return observation for each agent
+        state = np.array([self.player1.health, self.player2.health,
+                          self.player1.is_sleeping(), self.player2.is_sleeping()])
+        # TODO: Currently incomplete
+        return np.array([deepcopy(state), deepcopy(state)])
 
     def get_bot(self, bot_type):
         if bot_type == BOT_TYPE_SPIKE:
@@ -81,8 +85,6 @@ class CoolGameEnv(gym.Env):
             return TorchBot(self.game_params.torch_params)
         elif bot_type == BOT_TYPE_NAIL:
             return NailBot(self.game_params.nail_params)
-        else:
-            raise ValueError("ERROR: Invalid Bot Type")
 
     def clone(self):
         """
@@ -100,6 +102,12 @@ class CoolGameEnv(gym.Env):
         returns: (obsvervations: List, rewards: List, done: bool)
         :param actions: List of two elements, containing one action for each player
         """
+        # Check input validity
+        for i, (p, action) in enumerate(zip([self.player1, self.player2], actions)):
+            if action not in p.get_valid_moves(self.current_state):
+                warnings.warn(f'Invalid action by player {i}. Valid actions: {p.get_valid_moves(self.current_state)}. None action taken instead')
+                actions[i] = NONE_ACTION
+
         self.current_state.handle_input(actions[0], actions[1])
         self.current_state.step()
 
@@ -143,4 +151,6 @@ class CoolGameEnv(gym.Env):
         if mode == 'rgb':
             return PygameRender(self).draw()
         elif mode == 'string':
-            return self.current_state.board.test_print()
+            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}\n P2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}'
+            board_state = self.current_state.board.test_print()
+            return player_stats + '\n' + board_state

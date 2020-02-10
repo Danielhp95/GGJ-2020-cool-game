@@ -19,6 +19,15 @@ class FlameSprite(pygame.sprite.Sprite):
         self.image = image
         self.rect = image.get_rect()
 
+
+class NailSprite(pygame.sprite.Sprite):
+
+    def __init__(self, image = None):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.rect = image.get_rect()
+
+
 class PygameRender():
 
     def __init__(self, environment):
@@ -28,9 +37,10 @@ class PygameRender():
         img_folder = os.path.join(self.game_folder, 'images')
         self.spikyBot_img = pygame.image.load(os.path.join(img_folder, 'punkrobot2.png')).convert_alpha()
         self.blowTorchBot_img = pygame.image.load(os.path.join(img_folder, 'fireBot.png')).convert_alpha()
+        self.nailBot_img = pygame.image.load(os.path.join(img_folder, 'nailBot.png')).convert_alpha()
         # self.nailBot_img = pygame.image.load(os.path.join(img_folder, 'nailBot.png')).convert_alpha()
         self.flame_img = pygame.image.load(os.path.join(img_folder, 'flame.png')).convert_alpha()
-        slice
+        self.nail_img = pygame.image.load(os.path.join(img_folder, 'nailBullet.png')).convert_alpha()
 
         self.env = environment
         self.game = environment.current_state
@@ -42,10 +52,17 @@ class PygameRender():
         # This sets the margin between each cell
         self.MARGIN = 5
 
-    def create_flame_sprit(self) -> FlameSprite:
+    def crate_flame_sprite(self) -> FlameSprite:
         sprite = FlameSprite(self.flame_img)
         sprite.image = pygame.transform.scale(sprite.image, (self.WIDTH, self.HEIGHT))
         return sprite
+
+
+    def create_nail_sprite(self) -> NailSprite:
+        sprite = NailSprite(self.nail_img)
+        sprite.image = pygame.transform.scale(sprite.image, (self.WIDTH, self.HEIGHT))
+        return sprite
+
 
     def get_sprite(self, player_index):
         if player_index == 0:
@@ -59,8 +76,10 @@ class PygameRender():
             return BotSprite(self.spikyBot_img)
         elif bot_type == BOT_TYPE_TORCH:
             return BotSprite(self.blowTorchBot_img)
+        elif bot_type == BOT_TYPE_NAIL:
+            return BotSprite(self.nailBot_img)
         else:
-            raise ValueError("ERROR: Invalid Bot Type")
+            return ValueError('Unknown Bot Type')
 
 
     def render(self):
@@ -80,15 +99,23 @@ class PygameRender():
         WINDOW_SIZE = [1000, 1000]
         screen = pygame.display.set_mode(WINDOW_SIZE)
 
+        # Background color
+        screen.fill(BLACK)
+
+        player1 = self.game.player1
+        player2 = self.game.player2
+
         # Set title of screen
         pygame.display.set_caption("Cool Bot Game")
 
         # Setup font
         fonts_folder = os.path.join(self.game_folder,'fonts')
-        font = pygame.font.Font(os.path.join(fonts_folder, 'SigmarOne.ttf'), 32)
+        font = pygame.font.Font(os.path.join(fonts_folder, 'SigmarOne.ttf'), 28)
 
-        player1name = font.render('Player 1', True, BLUE)
-        player2name = font.render('Player 2', True, GREEN)
+        p1_sleeping_text = 'Sleeping' if player1.is_sleeping() else 'READY'
+        p2_sleeping_text = 'Sleeping' if player2.is_sleeping() else 'READY'
+        player1name = font.render(f'Player 1: {player1.health} HP. {p1_sleeping_text}', True, BLUE)
+        player2name = font.render(f'Player 2: {player2.health} HP. {p2_sleeping_text}', True, GREEN)
 
         # create a rectangular object for the
         # text surface object
@@ -96,14 +123,20 @@ class PygameRender():
         player2_text_rect = player2name.get_rect()
 
         # set the center of the rectangular object.
-        player1_text_rect.center = (100, 20)
-        player2_text_rect.center = (800,20)
+        player1_text_rect.center = (200, 20)
+        player2_text_rect.center = (700, 20)
 
-        player1 = self.game.player1
-        player2 = self.game.player2
+        # Render player names and scoreboard
 
-        # Background color
-        screen.fill(BLACK)
+        # Player 1
+        pygame.draw.rect(screen, (255, 0, 0), (10,40, (300/player1.max_health)*player1.max_health, 30))
+        pygame.draw.rect(screen, (0, 128, 0), (10,40, (300/player1.max_health)*player1.health, 30))
+        screen.blit(player1name, player1_text_rect)
+
+        # Player 2
+        pygame.draw.rect(screen, (255, 0, 0), (600,40, (300/player2.max_health)*player2.max_health, 30))
+        pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.health)*player2.health, 30))
+        screen.blit(player2name, player2_text_rect)
 
         # Set size of sprite to the size of one tile
         player1_sprite = self.get_sprite(0)
@@ -115,6 +148,11 @@ class PygameRender():
         for row in range(1,len(self.game.board.grid)-1):
             for column in range(1,len(self.game.board.grid)-1):
                 color = WHITE
+                if isinstance(self.game.board.grid[row][column], Bullet):
+                    bullet_sprite = self.create_nail_sprite()
+                    bullet_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
+                    bullet_sprite_group = pygame.sprite.Group(bullet_sprite)
+                    bullet_sprite_group.draw(screen)
                 if self.game.board.grid[row][column] == player1:
                     color = BOT_COLOR_A_FADED if player1.is_sleeping() else BOT_COLOR_A
                     pygame.draw.rect(screen,
@@ -154,24 +192,10 @@ class PygameRender():
         for p in [player1, player2]:
             if not isinstance(p, TorchBot): continue
             for row, column in p.torch_cells:
-                flame_sprite = self.create_flame_sprit()
+                flame_sprite = self.crate_flame_sprite()
                 flame_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
                 flame_sprite_group = pygame.sprite.Group(flame_sprite)
                 flame_sprite_group.draw(screen)
-
-
-        # Render player names and scoreboard
-
-        # Player 1
-        pygame.draw.rect(screen, (255, 0, 0), (10,40, (300/player1.max_health)*player1.max_health, 30))
-        pygame.draw.rect(screen, (0, 128, 0), (10,40, (300/player1.max_health)*player1.health, 30))
-        screen.blit(player1name, player1_text_rect)
-
-        # Player 2
-        pygame.draw.rect(screen, (255, 0, 0), (600,40, (300/player2.max_health)*player2.max_health, 30))
-        pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.health)*player2.health, 30))
-        screen.blit(player2name, player2_text_rect)
-
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
 

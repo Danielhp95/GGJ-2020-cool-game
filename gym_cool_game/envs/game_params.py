@@ -23,9 +23,8 @@ class SawBotParams:
 
 @dataclass
 class NailBotParams:
-    dmg: int = 1
+    dmg: int = 3
     weight: int = 1
-    bullet_speed: int = 3
     cooldown: int = 2
     ticks_between_moves: int = 3
 
@@ -42,7 +41,7 @@ def construct_game_params(torch_dmg, torch_weight, torch_torch_range,
                           torch_ticks_between_moves,
                           saw_dmg_min, saw_dmg_max, saw_weight,
                           saw_duration, saw_cooldown, saw_ticks_between_moves,
-                          nail_dmg, nail_weight, nail_bullet_speed,
+                          nail_dmg, nail_weight,
                           nail_cooldown, nail_ticks_between_moves):
 
 
@@ -54,6 +53,6 @@ def construct_game_params(torch_dmg, torch_weight, torch_torch_range,
                               weight=saw_weight, duration=saw_duration, cooldown=saw_cooldown,
                               ticks_between_moves=saw_ticks_between_moves)
     nail_params = NailBotParams(dmg=nail_dmg, weight=nail_weight,
-                                bullet_speed=nail_bullet_speed, cooldown=nail_cooldown,
+                                cooldown=nail_cooldown,
                                 ticks_between_moves=nail_ticks_between_moves)
     return GameParams(torch_params, saw_params, nail_params)

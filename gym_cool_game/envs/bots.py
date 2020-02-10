@@ -3,7 +3,7 @@ from .game_params import NailBotParams, SawBotParams, TorchParams
 
 BOT_TYPE_SPIKE = 0
 BOT_TYPE_TORCH = 1
-BOT_TYPE_NAIL = 1
+BOT_TYPE_NAIL = 2
 
 class Bot():
 
@@ -14,7 +14,7 @@ class Bot():
         self.pos_x = -100
         self.pos_y = -100
         self.name = str(name)
-        self.curr_rotation = 1
+        self.curr_rotation = DIRECTION_UP
         self.health = 10
         self.max_health = 10
 
@@ -32,10 +32,8 @@ class Bot():
 
     def get_valid_moves(self, state):
         moves = [NONE_ACTION]
-
         if not self.is_sleeping():
             moves += self.get_moves_bot(state) + self.get_actions_bot(state)
-
         return moves
 
     def get_moves_bot(self, state):
@@ -93,18 +91,55 @@ class NailBot(Bot):
         super(NailBot, self).__init__('NailBot', params.ticks_between_moves, params.weight)
 
         self.dmg = params.dmg
-        self.bullet_speed = params.bullet_speed
         self.cooldown = params.cooldown
 
         self.ability_counter = 0
+        self.active_bullets = []
 
     def act(self):
         # spawn bullet, moves in direction self.curr_rotation at speed self.bullet_speed
         self.ability_counter = self.cooldown
+        if self.curr_rotation == DIRECTION_UP: bullet_x, bullet_y = self.pos_x - 1, self.pos_y 
+        if self.curr_rotation == DIRECTION_DOWN: bullet_x, bullet_y = self.pos_x + 1, self.pos_y
+        if self.curr_rotation == DIRECTION_LEFT: bullet_x, bullet_y = self.pos_x, self.pos_y - 1
+        if self.curr_rotation == DIRECTION_RIGHT: bullet_x, bullet_y = self.pos_x, self.pos_y + 1
+
+        self.active_bullets.append(Bullet(bullet_x, bullet_y, self.curr_rotation))
 
     def tick_bot(self, state):
         if self.ability_counter > 0:
             self.ability_counter -= 1
+        for b in self.active_bullets: b.tick(state)
+
+
+class Bullet:
+
+    def __init__(self, pos_x, pos_y, direction):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.direction = direction
+
+    def tick(self, state):
+        cell = state.board.get(self.pos_x, self.pos_y)
+
+        # Check for destruction conditions
+        if hasattr(cell, 'health'):
+            cell.health -= self.dmg
+            del self
+            return
+        if cell == 1:  # 1 refers to boundaries
+            del self
+            return
+
+        # Move to direction
+        if self.direction == DIRECTION_UP:
+            self.pos_x -= 1
+        if self.direction == DIRECTION_DOWN:
+            self.pos_x += 1
+        if self.direction == DIRECTION_LEFT:
+            self.pos_y -= 1
+        if self.direction == DIRECTION_RIGHT:
+            self.pos_y += 1
 
 
 class TorchBot(Bot):
@@ -128,14 +163,14 @@ class TorchBot(Bot):
         self.active_time -= 1
         # if ability is active spawn flame in direction of current rotation with range of torch_range
         if self.active_time > self.cooldown:
-            if self.curr_rotation == 1:
+            if self.curr_rotation == DIRECTION_LEFT:  # Left
                 self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
-            elif self.curr_rotation == 2:
-                self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
-            elif self.curr_rotation == 3:
-                self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
-            else:
+            elif self.curr_rotation == DIRECTION_UP:  # Up
                 self.torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
+            elif self.curr_rotation == DIRECTION_RIGHT:  # Right
+                self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
+            elif self.curr_rotation == DIRECTION_DOWN:  # Down
+                self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
             for cell in self.torch_cells:
                 cell = state.board.get(cell[0], cell[1])
                 if hasattr(cell, 'health'):
