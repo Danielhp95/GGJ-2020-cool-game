@@ -17,9 +17,9 @@ class CoolGameEnv(gym.Env):
 
     def __init__(self,
                  botA_type: int = 0, botB_type: int = 0,
-                 board_size: int = 10,
-                 p1_starting_position: List = [2,2],
-                 p2_starting_position: List = [7,7],
+                 board_size: int = 8,
+                 p1_starting_position: List = [1,1],
+                 p2_starting_position: List = [6,6],
                  # TorchBot parameters
                  torch_dmg=2,
                  torch_weight=2,
@@ -105,7 +105,7 @@ class CoolGameEnv(gym.Env):
         # Check input validity
         for i, (p, action) in enumerate(zip([self.player1, self.player2], actions)):
             if action not in p.get_valid_moves(self.current_state):
-                warnings.warn(f'Invalid action by player {i}. Valid actions: {p.get_valid_moves(self.current_state)}. None action taken instead')
+                warnings.warn(f'Player {i} took invalid action {action}. Valid actions: {p.get_valid_moves(self.current_state)}. None action taken instead')
                 actions[i] = NONE_ACTION
 
         self.current_state.handle_input(actions[0], actions[1])
