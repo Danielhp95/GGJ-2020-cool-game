@@ -23,7 +23,8 @@ def absolute_edge_distance(target, graph):
 
 def generate_evaluation_matrix(cool_game_params, logger):
     # 0: SawBot 1: TorchBot 2: NailBot
-    benchmarking_episodes = 5
+    benchmarking_episodes = 100
+    mcts_budget = 1
 
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=0, botB_type=1, **cool_game_params)
@@ -32,7 +33,7 @@ def generate_evaluation_matrix(cool_game_params, logger):
     torch_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=1, botB_type=2, **cool_game_params)
 
-    mcts_config = {'budget': 1}
+    mcts_config = {'budget': mcts_budget}
     mcts_agent = build_MCTS_Agent(saw_vs_torch_task, mcts_config, agent_name='MCTS agent')
 
     saw_winrates = benchmark_agents_on_tasks(tasks=[saw_vs_torch_task, saw_vs_nail_task],
@@ -46,8 +47,9 @@ def generate_evaluation_matrix(cool_game_params, logger):
     msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
     logger.info(msg)
     logger.info(f'params={cool_game_params}')
-    return np.array([[0., saw_winrates[0]],
-                     [-saw_winrates[0], 0.]])
+    return np.array([[0., saw_winrates[0], saw_winrates[1]],
+                     [-saw_winrates[0], 0., nail_winrate[0]],
+                     [-saw_winrates[0], -nail_winrate[0], 0.]])
 
 
 def evaluate_graph(target, game_params, logger):
@@ -104,11 +106,10 @@ if __name__ == '__main__':
     num_processes = 1  # Max
 
     # Graph targets
-    rps_target = np.array([[0, 0.5],
-                           [0.5, 0]])
+    rps_target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
     study = optuna.create_study()
 
     logger.info(f'START game parameter search. Num_processes:{num_processes}')
     study.optimize(lambda trial: objective(trial, rps_target, logger),
-                   n_trials=2000, n_jobs=num_processes)
+                   n_trials=20000, n_jobs=num_processes)
     print(study.best_params)
