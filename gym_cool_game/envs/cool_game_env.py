@@ -68,8 +68,8 @@ class CoolGameEnv(gym.Env):
 
     def reset(self):
         self.winner = -1 # Values: [-1, 0, 1]
-        self.player1 = self.get_bot(self.botA_type)
-        self.player2 = self.get_bot(self.botB_type)
+        self.player1 = self.get_bot(self.botA_type, player_index=0)
+        self.player2 = self.get_bot(self.botB_type, player_index=1)
         self.board = Board(self.board_size)
         self.current_state = Game(self.board, self.player1, self.player2,
                                   self.p1_starting_position, self.p2_starting_position)
@@ -78,13 +78,15 @@ class CoolGameEnv(gym.Env):
         # TODO: Currently incomplete
         return np.array([deepcopy(state), deepcopy(state)])
 
-    def get_bot(self, bot_type):
+    def get_bot(self, bot_type, player_index):
         if bot_type == BOT_TYPE_SPIKE:
-            return SawBot(self.game_params.saw_params)
+            bot = SawBot(self.game_params.saw_params)
         elif bot_type == BOT_TYPE_TORCH:
-            return TorchBot(self.game_params.torch_params)
+            bot = TorchBot(self.game_params.torch_params)
         elif bot_type == BOT_TYPE_NAIL:
-            return NailBot(self.game_params.nail_params)
+            bot = NailBot(self.game_params.nail_params)
+        bot.player_index = player_index
+        return bot
 
     def clone(self):
         """
@@ -130,11 +132,9 @@ class CoolGameEnv(gym.Env):
         TODO: figure out what are the valid moves an agent can take.
         (i.e figure ability cooldowns / collision against map borders)
         """
-        available_moves = (self.player1 if player == 0 else self.player2).get_valid_moves(self.current_state)
-
         if self.winner != -1:
             return []
-
+        available_moves = (self.player1 if player == 0 else self.player2).get_valid_moves(self.current_state)
         return available_moves
 
     def is_over(self):
@@ -151,6 +151,8 @@ class CoolGameEnv(gym.Env):
         if mode == 'rgb':
             return PygameRender(self).draw()
         elif mode == 'string':
-            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}. Moves: {self.player1.get_valid_moves(self.current_state)}\nP2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}. Moves: {self.player2.get_valid_moves(self.current_state)}'
+            player1_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}. Moves: {self.player1.get_valid_moves(self.current_state)}'
+            player2_stats = f'P2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}. Moves: {self.player2.get_valid_moves(self.current_state)}'
+            player_stats = player1_stats + '\n' + player2_stats
             board_state = str(self.current_state.board)
             return player_stats + '\n' + board_state

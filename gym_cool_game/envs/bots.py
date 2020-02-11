@@ -19,6 +19,8 @@ class Bot():
         self.health = 10
         self.max_health = 10
 
+        self.player_index = None
+
     def tick(self, state):
         if self.sleep > 0:
             self.sleep -= 1
@@ -41,6 +43,7 @@ class Bot():
         return state.board.get_valid_moves(self)
 
     def get_actions_bot(self, state):
+        # TODO: if cooldown isn't active, we can't do action!
         return [ACTION]
 
     def after_move(self):
@@ -53,7 +56,8 @@ class Bot():
         pass
 
     def __repr__(self):
-        return self.name[0]
+        color = Fore.GREEN if self.player_index == 0 else Fore.BLUE
+        return color + self.name[0] + Fore.RESET
 
 class SawBot(Bot):
 
