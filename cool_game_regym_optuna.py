@@ -23,7 +23,7 @@ def absolute_edge_distance(target, graph):
 
 def generate_evaluation_matrix(cool_game_params, logger):
     # 0: SawBot 1: TorchBot 2: NailBot
-    benchmarking_episodes = 100
+    benchmarking_episodes = 1
     mcts_budget = 1
 
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
@@ -44,8 +44,11 @@ def generate_evaluation_matrix(cool_game_params, logger):
                                              agents=[mcts_agent],
                                              populate_all_agents=True,
                                              num_episodes=benchmarking_episodes)
-    msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
-    logger.info(msg)
+
+    bench_msg = f'episodes={benchmarking_episodes} MCTS_budget={mcts_budget}'
+    winrates_msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
+    logger.info(bench_msg)
+    logger.info(winrates_msg)
     logger.info(f'params={cool_game_params}')
     return np.array([[0., saw_winrates[0], saw_winrates[1]],
                      [-saw_winrates[0], 0., nail_winrate[0]],
