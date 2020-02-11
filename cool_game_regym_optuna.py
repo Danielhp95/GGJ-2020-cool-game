@@ -1,8 +1,7 @@
+import time
 from copy import deepcopy
 import numpy as np
 import optuna
-from optuna.visualization import plot_optimization_history, plot_slice, plot_intermediate_values, plot_contour
-from plotly.offline import plot
 
 import regym
 
@@ -25,7 +24,7 @@ def absolute_edge_distance(target, graph):
 def generate_evaluation_matrix(cool_game_params, logger):
     player1_type = 1  # TorchBot
     player2_type = 2  # NailBot
-    benchmarking_episodes = 20
+    benchmarking_episodes = 5
 
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                       botA_type=player1_type,
@@ -46,12 +45,16 @@ def generate_evaluation_matrix(cool_game_params, logger):
 
 
 def evaluate_graph(target, game_params, logger):
+    start = time.time()
+    logger.info('New iteration')
     # Train agents (not-necessary for rps)
     # Generate evaluation matrix
     a = generate_evaluation_matrix(game_params, logger)
     # Compute response graph
     g = np.where(a < 0,  0, a) # Set to 0 all negative values
     # Compute graph distance
+    total = time.time() - start
+    logger.info(f'Total: {total}s')
     distance = absolute_edge_distance(target, g)
     return distance
 
@@ -91,12 +94,15 @@ if __name__ == '__main__':
     logger = logging.getLogger('CoolGame_autobalancing')
     logger.setLevel(logging.INFO)
 
+    # logging
+    num_processes = 4  # Max
+
     # Graph targets
     rps_target = np.array([[0, 0.5],
                            [0.5, 0]])
     study = optuna.create_study()
 
-    logger.info('START game parameter search')
+    logger.info('START game parameter search. Num_processes:{num_processes}')
     study.optimize(lambda trial: objective(trial, rps_target, logger),
-                   n_trials=2000, n_jobs=1)
+                   n_trials=2000, n_jobs=num_processes)
     print(study.best_params)
