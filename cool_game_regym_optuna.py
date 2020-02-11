@@ -22,26 +22,32 @@ def absolute_edge_distance(target, graph):
 
 
 def generate_evaluation_matrix(cool_game_params, logger):
-    player1_type = 1  # TorchBot
-    player2_type = 2  # NailBot
+    # 0: SawBot 1: TorchBot 2: NailBot
     benchmarking_episodes = 5
 
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
-                                      botA_type=player1_type,
-                                      botB_type=player2_type,
-                                      **cool_game_params)
+                                       botA_type=0, botB_type=1, **cool_game_params)
+    saw_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
+                                       botA_type=0, botB_type=2, **cool_game_params)
+    torch_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
+                                       botA_type=1, botB_type=2, **cool_game_params)
 
     mcts_config = {'budget': 1}
     mcts_agent = build_MCTS_Agent(saw_vs_torch_task, mcts_config, agent_name='MCTS agent')
 
-    saw_vs_torch_winrates = benchmark_agents_on_tasks(tasks=[saw_vs_torch_task],
-                                                      agents=[mcts_agent],
-                                                      populate_all_agents=True,
-                                                      num_episodes=benchmarking_episodes)
-    logger.info(f'winrates={saw_vs_torch_winrates[0]}')
-    logger.info(f'winrates={saw_vs_torch_winrates[0]}params=\n{cool_game_params}')
-    return np.array([[0., saw_vs_torch_winrates[0]],
-                     [-saw_vs_torch_winrates[0], 0.]])
+    saw_winrates = benchmark_agents_on_tasks(tasks=[saw_vs_torch_task, saw_vs_nail_task],
+                                             agents=[mcts_agent],
+                                             populate_all_agents=True,
+                                             num_episodes=benchmarking_episodes)
+    nail_winrate = benchmark_agents_on_tasks(tasks=[torch_vs_nail_task],
+                                             agents=[mcts_agent],
+                                             populate_all_agents=True,
+                                             num_episodes=benchmarking_episodes)
+    msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
+    logger.info(msg)
+    logger.info(f'params={cool_game_params}')
+    return np.array([[0., saw_winrates[0]],
+                     [-saw_winrates[0], 0.]])
 
 
 def evaluate_graph(target, game_params, logger):
@@ -60,7 +66,7 @@ def evaluate_graph(target, game_params, logger):
 
 def objective(trial, target, logger):
     params = {'torch_dmg': trial.suggest_int('torch_dmg', 1, 5),
-              'torch_weight': trial.suggest_int('torch_weight', 1, 5),
+              # 'torch_weight': trial.suggest_int('torch_weight', 1, 5),
               'torch_torch_range': trial.suggest_int('torch_torch_range', 1, 5),
               'torch_duration': trial.suggest_int('torch_duration', 1, 5),
               'torch_cooldown': trial.suggest_int('torch_cooldown', 1, 5),
@@ -68,7 +74,7 @@ def objective(trial, target, logger):
               # SawBot parameters 
               'saw_dmg_min': trial.suggest_int('saw_dmg_min', 1, 5),
               'saw_dmg_max': trial.suggest_int('saw_dmg_max', 1, 5),
-              'saw_weight': trial.suggest_int('saw_weight', 1, 5),
+              # 'saw_weight': trial.suggest_int('saw_weight', 1, 5),
               'saw_duration': trial.suggest_int('saw_duration', 1, 5),
               'saw_cooldown': trial.suggest_int('saw_cooldown', 1, 5),
               'saw_ticks_between_moves': trial.suggest_int('saw_ticks_between_moves', 1, 5),
@@ -95,14 +101,14 @@ if __name__ == '__main__':
     logger.setLevel(logging.INFO)
 
     # logging
-    num_processes = 4  # Max
+    num_processes = 1  # Max
 
     # Graph targets
     rps_target = np.array([[0, 0.5],
                            [0.5, 0]])
     study = optuna.create_study()
 
-    logger.info('START game parameter search. Num_processes:{num_processes}')
+    logger.info(f'START game parameter search. Num_processes:{num_processes}')
     study.optimize(lambda trial: objective(trial, rps_target, logger),
                    n_trials=2000, n_jobs=num_processes)
     print(study.best_params)
