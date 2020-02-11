@@ -188,15 +188,26 @@ class PygameRender():
         player1sprite.draw(screen)
         player2sprite.draw(screen)
 
-        # Render flames from TorchBot
+        # Render Special bot actions
         for p in [player1, player2]:
-            if not isinstance(p, TorchBot): continue
-            for row, column in p.torch_cells:
-                flame_sprite = self.crate_flame_sprite()
-                flame_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
-                flame_sprite_group = pygame.sprite.Group(flame_sprite)
-                flame_sprite_group.draw(screen)
+            # Render Flames from torch bot
+            if isinstance(p, TorchBot):
+                for row, column in p.torch_cells:
+                    flame_sprite = self.crate_flame_sprite()
+                    flame_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
+                    flame_sprite_group = pygame.sprite.Group(flame_sprite)
+                    flame_sprite_group.draw(screen)
+            # Render Nails from nail bots
+            if isinstance(p, NailBot):
+                for row, column in map(lambda b: (b.pos_x, b.pos_y), p.active_bullets):
+                    bullet_sprite = self.create_nail_sprite()
+                    bullet_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
+                    bullet_sprite_group = pygame.sprite.Group(bullet_sprite)
+                    bullet_sprite_group.draw(screen)
+
         # Go ahead and update the screen with what we've drawn.
+
+        # Render bullets from Nail bots
         pygame.display.flip()
 
 

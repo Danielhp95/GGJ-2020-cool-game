@@ -38,7 +38,7 @@ class CoolGameEnv(gym.Env):
                  nail_dmg=3,
                  nail_weight=1,
                  nail_cooldown=2,
-                 nail_ticks_between_moves=3):
+                 nail_ticks_between_moves=1):
         # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
         # And a 5th "Action", which is bot dependant
         self.action_space = Tuple([Discrete(5), Discrete(5)])
@@ -151,6 +151,6 @@ class CoolGameEnv(gym.Env):
         if mode == 'rgb':
             return PygameRender(self).draw()
         elif mode == 'string':
-            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}\nP2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}'
+            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}. Moves: {self.player1.get_valid_moves(self.current_state)}\nP2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}. Moves: {self.player2.get_valid_moves(self.current_state)}'
             board_state = str(self.current_state.board)
             return player_stats + '\n' + board_state

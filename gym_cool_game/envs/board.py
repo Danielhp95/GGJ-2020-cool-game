@@ -24,7 +24,8 @@ class Board:
         # Only attempt to set current position to 0 if bot is already on the board
         # This becomes irrelevant if bots are only ever instantiated in valid locations
         if self.currently_on_board(bot.pos_x, bot.pos_y):
-            self.grid[bot.pos_x][bot.pos_y] = 0
+            if not isinstance(self.grid[bot.pos_x][bot.pos_y], Bot):
+                self.grid[bot.pos_x][bot.pos_y] = 0
             bot.pos_x = x
             bot.pos_y = y
             self.grid[x][y] = bot  # set new tile on grid to occupied
@@ -88,6 +89,10 @@ class Board:
             bot.update_rotation(direction)
 
         return next_pos
+
+    def clear(self, pos_x, pos_y):
+        if not isinstance(self.grid[pos_x][pos_y], Bot):
+            self.grid[pos_x][pos_y] = 0
 
     def __repr__(self):
         grid_rep = ""
