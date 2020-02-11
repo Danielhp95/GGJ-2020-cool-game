@@ -1,6 +1,7 @@
 import numpy as np
 from .valid_inputs import *
 
+
 class Board:
 
     def __init__(self, board_size):
@@ -14,7 +15,6 @@ class Board:
             cell = self.grid[x][y]
         except:
             cell = None
-
         return cell
 
     # Set the position of bot to (x, y)
@@ -32,11 +32,9 @@ class Board:
             bot.pos_y = y
             self.grid[x][y] = bot
 
-
     # Check if a set of coordinates is on the board
     def currently_on_board(self, x, y):
         return not (x > len(self.grid)-1 or x < 0 or y > len(self.grid)-1 or y < 0)
-
 
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
@@ -55,7 +53,6 @@ class Board:
             valid_moves.append(DIRECTION_UP)
 
         return valid_moves
-
 
     def resolve_moves(self, bot1, direction1, bot2, direction2):
         bot1_move = self.resolve_move(bot1, direction1)
@@ -91,10 +88,8 @@ class Board:
 
         return next_pos
 
-    def test_print(self):
+    def __repr__(self):
         grid_rep = ""
-
         for i in range(0, len(self.grid)):
             grid_rep += str(self.grid[i]) + "\n"
-
         return grid_rep
