@@ -45,7 +45,7 @@ class Bot():
     def after_move(self):
         self.sleep = self.ticks_between_moves
 
-    def act(self):
+    def act(self, state):
         pass
 
     def tick_bot(self, state):
@@ -66,7 +66,7 @@ class SawBot(Bot):
         self.dmg = self.dmg_min
         self.active_time = 0
 
-    def act(self):
+    def act(self, state):
         if self.active_time < self.cooldown:
             self.active_time = self.duration + self.cooldown
             self.dmg = self.dmg_max
@@ -96,15 +96,16 @@ class NailBot(Bot):
         self.ability_counter = 0
         self.active_bullets = []
 
-    def act(self):
+    def act(self, state):
         # spawn bullet, moves in direction self.curr_rotation at speed self.bullet_speed
         self.ability_counter = self.cooldown
-        if self.curr_rotation == DIRECTION_UP: bullet_x, bullet_y = self.pos_x - 1, self.pos_y 
-        if self.curr_rotation == DIRECTION_DOWN: bullet_x, bullet_y = self.pos_x + 1, self.pos_y
-        if self.curr_rotation == DIRECTION_LEFT: bullet_x, bullet_y = self.pos_x, self.pos_y - 1
-        if self.curr_rotation == DIRECTION_RIGHT: bullet_x, bullet_y = self.pos_x, self.pos_y + 1
-
-        self.active_bullets.append(Bullet(bullet_x, bullet_y, self.curr_rotation))
+        if self.active_time > self.cooldown:
+            if self.curr_rotation == DIRECTION_UP: bullet_x, bullet_y = self.pos_x - 1, self.pos_y 
+            if self.curr_rotation == DIRECTION_DOWN: bullet_x, bullet_y = self.pos_x + 1, self.pos_y
+            if self.curr_rotation == DIRECTION_LEFT: bullet_x, bullet_y = self.pos_x, self.pos_y - 1
+            if self.curr_rotation == DIRECTION_RIGHT: bullet_x, bullet_y = self.pos_x, self.pos_y + 1
+            new_bullet = Bullet(bullet_x, bullet_y, self.curr_rotation)
+            self.active_bullets.append(new_bullet)
 
     def tick_bot(self, state):
         if self.ability_counter > 0:
@@ -155,7 +156,7 @@ class TorchBot(Bot):
         self.active_time = 0
         self.torch_cells = []
 
-    def act(self):
+    def act(self, state):
         if self.active_time < self.cooldown:
             self.active_time = self.duration + self.cooldown
 

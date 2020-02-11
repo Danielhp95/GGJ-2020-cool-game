@@ -108,7 +108,7 @@ class CoolGameEnv(gym.Env):
                 warnings.warn(f'Player {i} took invalid action {action}. Valid actions: {p.get_valid_moves(self.current_state)}. None action taken instead')
                 actions[i] = NONE_ACTION
 
-        self.current_state.handle_input(actions[0], actions[1])
+        self.current_state.handle_input(self.current_state, actions[0], actions[1])
         self.current_state.step()
 
         reward_vector = [self.current_state.get_score(self.player1),
@@ -151,6 +151,6 @@ class CoolGameEnv(gym.Env):
         if mode == 'rgb':
             return PygameRender(self).draw()
         elif mode == 'string':
-            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}\n P2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}'
-            board_state = self.current_state.board.test_print()
+            player_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}\nP2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}'
+            board_state = str(self.current_state.board)
             return player_stats + '\n' + board_state
