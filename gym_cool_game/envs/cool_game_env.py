@@ -24,8 +24,8 @@ class CoolGameEnv(gym.Env):
                  torch_dmg=2,
                  torch_weight=2,
                  torch_torch_range=2,
-                 torch_duration=2,
-                 torch_cooldown=3,
+                 torch_duration=1,
+                 torch_cooldown=2,
                  torch_ticks_between_moves=2,
                  # SawBot parameters 
                  saw_dmg_min=1,
@@ -151,8 +151,9 @@ class CoolGameEnv(gym.Env):
         if mode == 'rgb':
             return PygameRender(self).draw()
         elif mode == 'string':
+            game_stats = f'Current tick: {self.current_state.ticks}'
             player1_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}. Moves: {self.player1.get_valid_moves(self.current_state)}'
             player2_stats = f'P2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}. Moves: {self.player2.get_valid_moves(self.current_state)}'
             player_stats = player1_stats + '\n' + player2_stats
             board_state = str(self.current_state.board)
-            return player_stats + '\n' + board_state
+            return game_stats + '\n' + player_stats + '\n' + board_state

@@ -38,6 +38,7 @@ class Game:
 
     # Advance the game state one tick
     def tick(self):
+        self.ticks += 1
         self.player1.tick(self)
         self.player2.tick(self)
 

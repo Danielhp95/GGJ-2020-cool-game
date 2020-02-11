@@ -8,7 +8,7 @@ BOT_TYPE_NAIL = 2
 
 class Bot():
 
-    def __init__(self, name: str, ticks_between_moves: int, weight: int):
+    def __init__(self, name: str, ticks_between_moves: int, weight: int, cooldown: int):
         self.ticks_between_moves = ticks_between_moves
         self.sleep = 0
         self.weight = 1
@@ -19,6 +19,10 @@ class Bot():
         self.health = 10
         self.max_health = 10
 
+        self.ticks_till_action_available = 0
+        self.cooldown = cooldown
+
+        # To be set outside of __init__ 
         self.player_index = None
 
     def tick(self, state):
@@ -42,10 +46,6 @@ class Bot():
     def get_moves_bot(self, state):
         return state.board.get_valid_moves(self)
 
-    def get_actions_bot(self, state):
-        # TODO: if cooldown isn't active, we can't do action!
-        return [ACTION]
-
     def after_move(self):
         self.sleep = self.ticks_between_moves
 
@@ -53,20 +53,25 @@ class Bot():
         pass
 
     def tick_bot(self, state):
-        pass
+        if self.ticks_till_action_available > 0:
+            self.ticks_till_action_available -= 1
 
     def __repr__(self):
         color = Fore.GREEN if self.player_index == 0 else Fore.BLUE
         return color + self.name[0] + Fore.RESET
 
+    def get_actions_bot(self, state):
+        if self.ticks_till_action_available == 0: return [ACTION]
+        else: return []
+
+
 class SawBot(Bot):
 
     def __init__(self, params: SawBotParams):
-        Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight)
+        Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight, params.cooldown)
         self.dmg_min = params.dmg_min
         self.dmg_max = params.dmg_max
         self.duration = params.duration
-        self.cooldown = params.cooldown
 
         self.dmg = self.dmg_min
         self.active_time = 0
@@ -75,8 +80,10 @@ class SawBot(Bot):
         if self.active_time < self.cooldown:
             self.active_time = self.duration + self.cooldown
             self.dmg = self.dmg_max
+            self.ticks_till_action_available = self.duration + self.cooldown
 
     def tick_bot(self, state):
+        super(SawBot, self).tick_bot(state)
         self.active_time -= 1
         # get adjacent cells
         for x, y in [(self.pos_x + i, self.pos_y + j)
@@ -90,12 +97,55 @@ class SawBot(Bot):
                 break
 
 
+class TorchBot(Bot):
+
+    def __init__(self, params: TorchParams):
+        Bot.__init__(self, 'TorchBot', params.ticks_between_moves, params.weight, params.cooldown)
+
+        self.dmg = params.dmg
+        self.torch_range = params.torch_range
+        self.duration = params.duration
+
+        self.active_time = 0
+        self.torch_cells = []
+
+    def act(self, state):
+        if self.active_time < self.cooldown:
+            self.ticks_till_action_available = self.duration + self.cooldown
+            self.active_time = self.duration + self.cooldown
+
+    def tick_bot(self, state):
+        super(TorchBot, self).tick_bot(state)
+        self.active_time -= 1
+        # if ability is active spawn flame in direction of current rotation with range of torch_range
+        # Understand why this is the opposite as saw bot
+        if self.active_time > self.cooldown:
+            self.update_torch_cells(state)
+        else:
+            self.torch_cells = []
+
+    def update_torch_cells(self, state):
+        if self.curr_rotation == DIRECTION_LEFT:  # Left
+            self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
+        elif self.curr_rotation == DIRECTION_UP:  # Up
+            self.torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
+        elif self.curr_rotation == DIRECTION_RIGHT:  # Right
+            self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
+        elif self.curr_rotation == DIRECTION_DOWN:  # Down
+            self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
+        for cell in self.torch_cells:
+            cell = state.board.get(cell[0], cell[1])
+            if hasattr(cell, 'health'):
+                # apply damage to opponent if they are in torch_cells
+                cell.health -= self.dmg
+                break
+
+
 class NailBot(Bot):
 
     def __init__(self, params: NailBotParams):
-        super(NailBot, self).__init__('NailBot', params.ticks_between_moves, params.weight)
+        super(NailBot, self).__init__('NailBot', params.ticks_between_moves, params.weight, params.cooldown)
         self.dmg = params.dmg
-        self.cooldown = params.cooldown
         self.active_time = 1
         self.ability_counter = 0
         self.active_bullets = []
@@ -112,6 +162,7 @@ class NailBot(Bot):
         self.active_bullets.append(new_bullet)
 
     def tick_bot(self, state):
+        super(NailBot, self).tick_bot(state)
         self.active_time -= 1
         for b in self.active_bullets:
             should_be_destroyed = b.tick(state)
@@ -168,43 +219,3 @@ class Bullet:
 
     def __repr__(self):
         return Fore.YELLOW + 'n' + Fore.RESET  # 'n' for nail. Lowercase to differentiate from bots
-
-
-class TorchBot(Bot):
-
-    def __init__(self, params: TorchParams):
-        Bot.__init__(self, 'TorchBot', params.ticks_between_moves, params.weight)
-
-        self.dmg = params.dmg
-        self.torch_range = params.torch_range
-        self.duration = params.duration
-        self.cooldown = params.cooldown
-
-        self.active_time = 0
-        self.torch_cells = []
-
-    def act(self, state):
-        if self.active_time < self.cooldown:
-            self.active_time = self.duration + self.cooldown
-
-    def tick_bot(self, state):
-        self.active_time -= 1
-        # if ability is active spawn flame in direction of current rotation with range of torch_range
-        # Understand why this is the opposite as saw bot
-        if self.active_time > self.cooldown:
-            if self.curr_rotation == DIRECTION_LEFT:  # Left
-                self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
-            elif self.curr_rotation == DIRECTION_UP:  # Up
-                self.torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
-            elif self.curr_rotation == DIRECTION_RIGHT:  # Right
-                self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
-            elif self.curr_rotation == DIRECTION_DOWN:  # Down
-                self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
-            for cell in self.torch_cells:
-                cell = state.board.get(cell[0], cell[1])
-                if hasattr(cell, 'health'):
-                    # apply damage to opponent if they are in torch_cells
-                    cell.health -= self.dmg
-                    break
-        else:
-            self.torch_cells = []
