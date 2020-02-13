@@ -6,6 +6,7 @@ from hyperopt import Trials, fmin, hp, tpe
 from hyperopt.mongoexp import MongoTrials
 
 
+import gym
 import gym_cool_game
 import regym
 from regym.environments import generate_task, EnvType
@@ -27,6 +28,7 @@ def generate_evaluation_matrix(cool_game_params, logger):
     benchmarking_episodes = 1
     mcts_budget = 1
 
+    import gym_cool_game
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=0, botB_type=1, **cool_game_params)
     saw_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
@@ -57,7 +59,6 @@ def generate_evaluation_matrix(cool_game_params, logger):
 
 
 def evaluate_graph(game_params, target, logger):
-    import gym_cool_game
     start = time.time()
     logger.info('New iteration')
     # Train agents (not-necessary for rps)
@@ -102,13 +103,22 @@ if __name__ == '__main__':
     logger = logging.getLogger('CoolGame_autobalancing')
     logger.setLevel(logging.INFO)
 
-    trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp1')
+    use_mongo = True
+    logger.info(f'Creating trials object use mongo: {use_mongo}')
+    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp4')
+    else: trials = Trials()
+
     logger.info(f'START game parameter search')
+    start = time.time()
     best = fmin(
             lambda params: evaluate_graph(params, target, logger),
             space=space,
             algo=tpe.suggest,
-            max_evals=1000,
+            max_evals=50,
             trials=trials)
+    import ipdb; ipdb.set_trace()
+    total = time.time() - start
+    logger.info(f'END game parameter search. Total time: {total}')
+    logger.info(f'Best params: {best}')
 
     print(best)

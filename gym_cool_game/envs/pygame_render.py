@@ -214,4 +214,7 @@ class PygameRender():
 
     def draw(self):
         self.render()
-        return pygame.surfarray.array3d(pygame.display.get_surface()).astype(np.uint8)
+        rgb_array = pygame.surfarray.array3d(pygame.display.get_surface()).astype(np.uint8)
+        rgb_array = np.rot90(rgb_array, k=3)  # Rotate 270 degrees
+        rgb_array = np.fliplr(rgb_array)
+        return rgb_array

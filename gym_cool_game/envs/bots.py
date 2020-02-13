@@ -77,13 +77,12 @@ class SawBot(Bot):
         self.active_time = 0
 
     def act(self, state):
-        if self.active_time < self.cooldown:
+        if self.ticks_till_action_available <= 0:
             self.active_time = self.duration + self.cooldown
             self.dmg = self.dmg_max
             self.ticks_till_action_available = self.duration + self.cooldown
 
     def tick_bot(self, state):
-        super(SawBot, self).tick_bot(state)
         self.active_time -= 1
         # get adjacent cells
         for x, y in [(self.pos_x + i, self.pos_y + j)
@@ -95,6 +94,7 @@ class SawBot(Bot):
                 # apply damage
                 cell.health -= self.dmg
                 break
+        super(SawBot, self).tick_bot(state)
 
 
 class TorchBot(Bot):
@@ -115,14 +115,14 @@ class TorchBot(Bot):
             self.active_time = self.duration + self.cooldown
 
     def tick_bot(self, state):
-        super(TorchBot, self).tick_bot(state)
         self.active_time -= 1
         # if ability is active spawn flame in direction of current rotation with range of torch_range
         # Understand why this is the opposite as saw bot
-        if self.active_time > self.cooldown:
+        if self.ticks_till_action_available > self.cooldown: # Hacky way to say '
             self.update_torch_cells(state)
         else:
             self.torch_cells = []
+        super(TorchBot, self).tick_bot(state)
 
     def update_torch_cells(self, state):
         if self.curr_rotation == DIRECTION_LEFT:  # Left
