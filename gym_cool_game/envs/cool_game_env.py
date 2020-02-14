@@ -18,8 +18,9 @@ class CoolGameEnv(gym.Env):
     def __init__(self,
                  botA_type: int = 0, botB_type: int = 0,
                  board_size: int = 8,
-                 p1_starting_position: List = [1,1],
-                 p2_starting_position: List = [6,6],
+                 max_game_ticks: int = 5,
+                 p1_starting_position: List = [3,3],
+                 p2_starting_position: List = [5,5],
                  # TorchBot parameters
                  torch_dmg=2,
                  torch_weight=2,
@@ -48,6 +49,7 @@ class CoolGameEnv(gym.Env):
                                         single_agent_observation])
 
         # Game params
+        self.max_game_ticks = max_game_ticks
         self.p1_starting_position = p1_starting_position
         self.p2_starting_position = p2_starting_position
 
@@ -72,7 +74,8 @@ class CoolGameEnv(gym.Env):
         self.player2 = self.get_bot(self.botB_type)
         self.board = Board(self.board_size)
         self.current_state = Game(self.board, self.player1, self.player2,
-                                  self.p1_starting_position, self.p2_starting_position)
+                                  self.p1_starting_position, self.p2_starting_position,
+                                  self.max_game_ticks)
         state = np.array([self.player1.health, self.player2.health,
                           self.player1.is_sleeping(), self.player2.is_sleeping()])
         # TODO: Currently incomplete

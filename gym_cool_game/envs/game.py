@@ -6,8 +6,10 @@ import pygame
 class Game:
 
     def __init__(self, board, player1, player2,
-                 p1_initial_pos: List, p2_initial_pos: List):
+                 p1_initial_pos: List, p2_initial_pos: List,
+                 max_game_ticks: int):
         self.ticks = 0
+        self.max_game_ticks = max_game_ticks
         self.board = board
         self.board.set(player1, *p1_initial_pos)
         self.board.set(player2, *p2_initial_pos)
@@ -40,6 +42,10 @@ class Game:
     def tick(self):
         self.player1.tick(self)
         self.player2.tick(self)
+
+        if self.ticks >= self.max_game_ticks:
+            self.player1.health -= 1
+            self.player2.health -= 1
 
         if self.player1.health <= 0:
             self.winner = self.player2
