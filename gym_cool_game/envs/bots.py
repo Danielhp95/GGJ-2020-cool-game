@@ -8,7 +8,8 @@ BOT_TYPE_NAIL = 2
 
 class Bot():
 
-    def __init__(self, name: str, ticks_between_moves: int, weight: int, cooldown: int):
+    def __init__(self, name: str, ticks_between_moves: int,
+                 weight: int, cooldown: int, health: int):
         self.ticks_between_moves = ticks_between_moves
         self.sleep = 0
         self.weight = 1
@@ -16,8 +17,8 @@ class Bot():
         self.pos_y = -100
         self.name = str(name)
         self.curr_rotation = DIRECTION_UP
-        self.health = 10
-        self.max_health = 10
+        self.health = health
+        self.max_health = health
 
         self.ticks_till_action_available = 0
         self.cooldown = cooldown
@@ -68,7 +69,8 @@ class Bot():
 class SawBot(Bot):
 
     def __init__(self, params: SawBotParams):
-        Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight, params.cooldown)
+        Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight,
+                     params.cooldown, params.health)
         self.dmg_min = params.dmg_min
         self.dmg_max = params.dmg_max
         self.duration = params.duration
@@ -100,7 +102,8 @@ class SawBot(Bot):
 class TorchBot(Bot):
 
     def __init__(self, params: TorchParams):
-        Bot.__init__(self, 'TorchBot', params.ticks_between_moves, params.weight, params.cooldown)
+        Bot.__init__(self, 'TorchBot', params.ticks_between_moves,
+                     params.weight, params.cooldown, params.health)
 
         self.dmg = params.dmg
         self.torch_range = params.torch_range
@@ -144,7 +147,8 @@ class TorchBot(Bot):
 class NailBot(Bot):
 
     def __init__(self, params: NailBotParams):
-        super(NailBot, self).__init__('NailBot', params.ticks_between_moves, params.weight, params.cooldown)
+        super(NailBot, self).__init__('NailBot', params.ticks_between_moves,
+                                      params.weight, params.cooldown, params.health)
         self.dmg = params.dmg
         self.active_time = 1
         self.ability_counter = 0

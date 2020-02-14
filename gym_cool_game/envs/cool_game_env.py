@@ -18,9 +18,10 @@ class CoolGameEnv(gym.Env):
     def __init__(self,
                  botA_type: int = 0, botB_type: int = 0,
                  board_size: int = 8,
-                 p1_starting_position: List = [1,1],
-                 p2_starting_position: List = [6,6],
+                 p1_starting_position: List = [3,3],
+                 p2_starting_position: List = [5,5],
                  # TorchBot parameters
+                 torch_health=10,
                  torch_dmg=2,
                  torch_weight=2,
                  torch_torch_range=2,
@@ -28,6 +29,7 @@ class CoolGameEnv(gym.Env):
                  torch_cooldown=2,
                  torch_ticks_between_moves=2,
                  # SawBot parameters 
+                 saw_health=5,
                  saw_dmg_min=1,
                  saw_dmg_max=2,
                  saw_weight=3,
@@ -35,6 +37,7 @@ class CoolGameEnv(gym.Env):
                  saw_cooldown=5,
                  saw_ticks_between_moves=1,
                  # NaileBot parameters
+                 nail_health=7,
                  nail_dmg=3,
                  nail_weight=1,
                  nail_cooldown=2,
@@ -53,11 +56,13 @@ class CoolGameEnv(gym.Env):
 
         # Bot params
         self.game_params = construct_game_params(
-                torch_dmg, torch_weight, torch_torch_range, torch_duration,
+                torch_health, torch_dmg, torch_weight,
+                torch_torch_range, torch_duration,
                 torch_cooldown, torch_ticks_between_moves,
-                saw_dmg_min, saw_dmg_max, saw_weight, saw_duration,
+                saw_health,saw_dmg_min, saw_dmg_max,
+                saw_weight, saw_duration,
                 saw_cooldown, saw_ticks_between_moves,
-                nail_dmg, nail_weight,
+                nail_health, nail_dmg, nail_weight,
                 nail_cooldown, nail_ticks_between_moves)
 
         self.botA_type = botA_type

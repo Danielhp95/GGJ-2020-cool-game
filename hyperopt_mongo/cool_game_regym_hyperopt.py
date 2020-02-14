@@ -75,24 +75,27 @@ def evaluate_graph(game_params, target, logger):
 
 if __name__ == '__main__':
     # Defining parameter space
-    space = {'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
+    space = {'torch_health': hp.uniformint('torch_health', 1, 10),
+             'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
              # 'torch_weight': hp.uniformint('torch_weight', 1, 10),
              'torch_torch_range': hp.uniformint('torch_torch_range', 1, 10),
              'torch_duration': hp.uniformint('torch_duration', 1, 10),
              'torch_cooldown': hp.uniformint('torch_cooldown', 1, 10),
              'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 10),
              # SawBot parameters 
+             'saw_health': hp.uniformint('saw_health', 1, 10),
              'saw_dmg_min': hp.uniformint('saw_dmg_min', 1, 10),
              'saw_dmg_max': hp.uniformint('saw_dmg_max', 1, 10),
              # 'saw_weight': hp.uniformint('saw_weight', 1, 10),
              'saw_duration': hp.uniformint('saw_duration', 1, 10),
              'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
              'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
-             # NaileBot parameters
-             # 'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
+             # NailBot parameters
+             'nail_health': hp.uniformint('nail_dmg', 1, 10),
+             'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
              # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
-             # 'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
-             # 'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
+             'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
+             'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
              }
 
     # Graph target
