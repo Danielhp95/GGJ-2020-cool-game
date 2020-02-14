@@ -1,5 +1,7 @@
 import numpy as np
+from .bots import Bot, Bullet
 from .valid_inputs import *
+
 
 class Board:
 
@@ -14,48 +16,50 @@ class Board:
             cell = self.grid[x][y]
         except:
             cell = None
-
         return cell
 
     # Set the position of bot to (x, y)
     # Must be passed an object of class Bot, of course
-    def set(self, bot, x, y):
-        # Only attempt to set current position to 0 if bot is already on the board
+    def set(self, entity, x, y):
+        # :param: entity can be a Bot or a Bullet
+        # Only attempt to set current position to 0 if entity is already on the board
         # This becomes irrelevant if bots are only ever instantiated in valid locations
-        if self.currently_on_board(bot.pos_x, bot.pos_y):
-            self.grid[bot.pos_x][bot.pos_y] = 0
-            bot.pos_x = x
-            bot.pos_y = y
-            self.grid[x][y] = bot  # set new tile on grid to occupied
+        if self.currently_on_board(entity.pos_x, entity.pos_y):
+            # This check is hacky af, but whatcha gonna do
+            if isinstance(entity, Bullet):
+                if not isinstance(self.grid[entity.pos_x][entity.pos_y], Bot):
+                    self.grid[entity.pos_x][entity.pos_y] = 0
+            elif isinstance(entity, Bot):
+                self.grid[entity.pos_x][entity.pos_y] = 0
+            entity.pos_x = x
+            entity.pos_y = y
+            self.grid[x][y] = entity  # set new tile on grid to occupied
         else:
-            bot.pos_x = x
-            bot.pos_y = y
-            self.grid[x][y] = bot
-
+            entity.pos_x = x
+            entity.pos_y = y
+            self.grid[x][y] = entity
 
     # Check if a set of coordinates is on the board
     def currently_on_board(self, x, y):
         return not (x > len(self.grid)-1 or x < 0 or y > len(self.grid)-1 or y < 0)
 
-
     # Get a list of valid directional moves for bot
     def get_valid_moves(self, bot):
-        valid_moves = [NONE_ACTION]
+        valid_moves = []
 
-        if self.grid[bot.pos_x-1][bot.pos_y] == 0:
+        if self.grid[bot.pos_y-1][bot.pos_x] == 0:
             valid_moves.append(DIRECTION_LEFT)
 
-        if self.grid[bot.pos_x + 1][bot.pos_y] == 0:
+        if self.grid[bot.pos_y + 1][bot.pos_x] == 0:
             valid_moves.append(DIRECTION_RIGHT)
 
-        if self.grid[bot.pos_x][bot.pos_y-1] == 0:
-            valid_moves.append(DIRECTION_DOWN)
-
-        if self.grid[bot.pos_x][bot.pos_y + 1] == 0:
+        if self.grid[bot.pos_y][bot.pos_x-1] == 0:
             valid_moves.append(DIRECTION_UP)
 
-        return valid_moves
+        if self.grid[bot.pos_y][bot.pos_x + 1] == 0:
+            valid_moves.append(DIRECTION_DOWN)
 
+        return valid_moves
 
     def resolve_moves(self, bot1, direction1, bot2, direction2):
         bot1_move = self.resolve_move(bot1, direction1)
@@ -91,10 +95,12 @@ class Board:
 
         return next_pos
 
-    def test_print(self):
-        grid_rep = ""
+    def clear(self, pos_x, pos_y):
+        if not isinstance(self.grid[pos_x][pos_y], Bot):
+            self.grid[pos_x][pos_y] = 0
 
+    def __repr__(self):
+        grid_rep = ""
         for i in range(0, len(self.grid)):
             grid_rep += str(self.grid[i]) + "\n"
-
         return grid_rep
