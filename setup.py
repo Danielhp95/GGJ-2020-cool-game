@@ -7,5 +7,5 @@ setup(name='gym_cool_game',
       author='Sarios',
       author_email='madness@xcape.com',
       packages=find_packages(),
-      install_requires=['gym', 'numpy', 'pygame']
+      install_requires=['gym', 'numpy', 'pygame', 'colorama']
       )

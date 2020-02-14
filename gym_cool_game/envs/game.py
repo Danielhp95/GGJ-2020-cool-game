@@ -38,6 +38,7 @@ class Game:
 
     # Advance the game state one tick
     def tick(self):
+        self.ticks += 1
         self.player1.tick(self)
         self.player2.tick(self)
 
@@ -47,9 +48,9 @@ class Game:
             self.winner = self.player1
 
     # resolve actions, then resolve moves.
-    def handle_input(self, player1_input, player2_input):
+    def handle_input(self, state, player1_input, player2_input):
         if not self.is_gameover():
-            self.take_actions(player1_input, player2_input)
+            self.take_actions(state, player1_input, player2_input)
             self.make_moves(player1_input, player2_input)
             self.tick()
 
@@ -62,9 +63,9 @@ class Game:
         return inp in bot.get_valid_moves(self)
 
     # activate specials
-    def take_actions(self, player1_input, player2_input):
-        if player1_input == ACTION: self.player1.act()
-        if player2_input == ACTION: self.player2.act()
+    def take_actions(self, state, player1_input, player2_input):
+        if player1_input == ACTION: self.player1.act(state)
+        if player2_input == ACTION: self.player2.act(state)
 
     # Make directional moves
     def make_moves(self, player1_input, player2_input):

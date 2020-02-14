@@ -1,12 +1,14 @@
 import time
 from copy import deepcopy
+
 import numpy as np
-import optuna
+from hyperopt import Trials, fmin, hp, tpe
+from hyperopt.mongoexp import MongoTrials
 
-import regym
 
-# TODO: cool game
+import gym
 import gym_cool_game
+import regym
 from regym.environments import generate_task, EnvType
 from regym.evaluation import benchmark_agents_on_tasks
 from regym.rl_algorithms import build_MCTS_Agent
@@ -26,6 +28,7 @@ def generate_evaluation_matrix(cool_game_params, logger):
     benchmarking_episodes = 1
     mcts_budget = 1
 
+    import gym_cool_game
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=0, botB_type=1, **cool_game_params)
     saw_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
@@ -55,7 +58,7 @@ def generate_evaluation_matrix(cool_game_params, logger):
                      [-saw_winrates[0], -nail_winrate[0], 0.]])
 
 
-def evaluate_graph(target, game_params, logger):
+def evaluate_graph(game_params, target, logger):
     start = time.time()
     logger.info('New iteration')
     # Train agents (not-necessary for rps)
@@ -69,50 +72,56 @@ def evaluate_graph(target, game_params, logger):
     distance = absolute_edge_distance(target, g)
     return distance
 
-def objective(trial, target, logger):
-    params = {'torch_dmg': trial.suggest_int('torch_dmg', 1, 5),
-              # 'torch_weight': trial.suggest_int('torch_weight', 1, 5),
-              'torch_torch_range': trial.suggest_int('torch_torch_range', 1, 5),
-              'torch_duration': trial.suggest_int('torch_duration', 1, 5),
-              'torch_cooldown': trial.suggest_int('torch_cooldown', 1, 5),
-              'torch_ticks_between_moves': trial.suggest_int('torch_ticks_between_moves', 1, 5),
-              # SawBot parameters 
-              'saw_dmg_min': trial.suggest_int('saw_dmg_min', 1, 5),
-              'saw_dmg_max': trial.suggest_int('saw_dmg_max', 1, 5),
-              # 'saw_weight': trial.suggest_int('saw_weight', 1, 5),
-              'saw_duration': trial.suggest_int('saw_duration', 1, 5),
-              'saw_cooldown': trial.suggest_int('saw_cooldown', 1, 5),
-              'saw_ticks_between_moves': trial.suggest_int('saw_ticks_between_moves', 1, 5),
-              # NaileBot parameters
-              # 'nail_dmg': trial.suggest_int('nail_dmg', 1, 5),
-              # 'nail_weight': trial.suggest_int('nail_weight', 1, 5),
-              # 'nail_cooldown': trial.suggest_int('nail_cooldown', 1, 5),
-              # 'nail_ticks_between_moves': trial.suggest_int('nail_ticks_between_moves', 1, 5)
-              }
-    return evaluate_graph(target, params, logger)
-
-
-def generate_targets():
-    return {'rps_target': rps_target, 'biased_rps_target': biased_rps_target,
-            'extended_rps_target': extended_rps_target}
-
-def log_trial(logger, trial):
-    pass
-
 
 if __name__ == '__main__':
+    # Defining parameter space
+    space = {'torch_health': hp.uniformint('torch_health', 1, 10),
+             'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
+             # 'torch_weight': hp.uniformint('torch_weight', 1, 10),
+             'torch_torch_range': hp.uniformint('torch_torch_range', 1, 10),
+             'torch_duration': hp.uniformint('torch_duration', 1, 10),
+             'torch_cooldown': hp.uniformint('torch_cooldown', 1, 10),
+             'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 10),
+             # SawBot parameters 
+             'saw_health': hp.uniformint('saw_health', 1, 10),
+             'saw_dmg_min': hp.uniformint('saw_dmg_min', 1, 10),
+             'saw_dmg_max': hp.uniformint('saw_dmg_max', 1, 10),
+             # 'saw_weight': hp.uniformint('saw_weight', 1, 10),
+             'saw_duration': hp.uniformint('saw_duration', 1, 10),
+             'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
+             'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
+             # NailBot parameters
+             'nail_health': hp.uniformint('nail_dmg', 1, 10),
+             'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
+             # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
+             'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
+             'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
+             }
+
+    # Graph target
+    target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
+
+    # logging
     logging.basicConfig()
     logger = logging.getLogger('CoolGame_autobalancing')
     logger.setLevel(logging.INFO)
 
-    # logging
-    num_processes = 1  # Max
+    use_mongo = True
+    logger.info(f'Creating trials object use mongo: {use_mongo}')
+    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp4')
+    else: trials = Trials()
 
-    # Graph targets
-    rps_target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
-    study = optuna.create_study()
+    logger.info(f'START game parameter search')
+    start = time.time()
+    best = fmin(
+            lambda params: evaluate_graph(params, target, logger),
+            space=space,
+            algo=tpe.suggest,
+            max_evals=50,
+            trials=trials)
+    import ipdb; ipdb.set_trace()
+    total = time.time() - start
+    logger.info(f'END game parameter search. Total time: {total}')
+    logger.info(f'Best params: {best}')
 
-    logger.info(f'START game parameter search. Num_processes:{num_processes}')
-    study.optimize(lambda trial: objective(trial, rps_target, logger),
-                   n_trials=20000, n_jobs=num_processes)
-    print(study.best_params)
+    print(best)
