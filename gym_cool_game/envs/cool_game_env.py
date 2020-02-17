@@ -25,8 +25,8 @@ class CoolGameEnv(gym.Env):
                  torch_health=10,
                  torch_dmg=2,
                  torch_weight=2,
-                 torch_torch_range=2,
-                 torch_duration=1,
+                 torch_torch_range=4,
+                 torch_duration=2,
                  torch_cooldown=2,
                  torch_ticks_between_moves=2,
                  # SawBot parameters 
