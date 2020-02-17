@@ -14,6 +14,13 @@ TODO
 ### Game parameterization
 TODO
 
+
+## Usage
+
+This environment follows the [OpenAI Gym interface](https://gym.openai.com/). 
+
+To play Human vs Human, run script `play_human_vs_human.py`. On each step you will be asked to input an action via the terminal (0-5), corresponding to all possible five actions. You can find the value of each action in `gym_cool_game/envs/valid_inputs.py`.
+
 ## Installation
 
 **Please use a virtual environment** to install this game. Otherwise the dependencies will be installed system-wide. We recommend [poetry](https://github.com/python-poetry/poetry)

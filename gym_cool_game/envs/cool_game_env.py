@@ -18,15 +18,15 @@ class CoolGameEnv(gym.Env):
     def __init__(self,
                  botA_type: int = 0, botB_type: int = 0,
                  board_size: int = 8,
-                 max_game_ticks: int = 5,
+                 max_game_ticks: int = 1000,
                  p1_starting_position: List = [3,3],
                  p2_starting_position: List = [5,5],
                  # TorchBot parameters
                  torch_health=10,
                  torch_dmg=2,
                  torch_weight=2,
-                 torch_torch_range=2,
-                 torch_duration=1,
+                 torch_torch_range=4,
+                 torch_duration=2,
                  torch_cooldown=2,
                  torch_ticks_between_moves=2,
                  # SawBot parameters 

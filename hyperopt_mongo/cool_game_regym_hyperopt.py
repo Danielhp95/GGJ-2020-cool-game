@@ -91,7 +91,7 @@ if __name__ == '__main__':
              'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
              'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
              # NailBot parameters
-             'nail_health': hp.uniformint('nail_dmg', 1, 10),
+             'nail_health': hp.uniformint('nail_health', 1, 10),
              'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
              # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
              'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     use_mongo = True
     logger.info(f'Creating trials object use mongo: {use_mongo}')
-    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp4')
+    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp7')
     else: trials = Trials()
 
     logger.info(f'START game parameter search')
@@ -117,11 +117,8 @@ if __name__ == '__main__':
             lambda params: evaluate_graph(params, target, logger),
             space=space,
             algo=tpe.suggest,
-            max_evals=50,
+            max_evals=10,
             trials=trials)
-    import ipdb; ipdb.set_trace()
     total = time.time() - start
     logger.info(f'END game parameter search. Total time: {total}')
     logger.info(f'Best params: {best}')
-
-    print(best)
