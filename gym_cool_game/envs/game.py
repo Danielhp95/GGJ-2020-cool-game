@@ -1,5 +1,6 @@
 from typing import List
 from .valid_inputs import *
+from .bots import Bot
 import pygame
 
 
@@ -17,14 +18,38 @@ class Game:
         self.player2 = player2
         self.winner = -1
 
+        # Reward hacking variables
+        self.distance_reward_coefficient = -1.
+        self.health_reward_coefficient = 10.
+        self.winning_reward_coefficient = 1000.
+
 
     def get_score(self, bot):
-        if self.is_gameover:
-            return 10000 if self.winner == bot else 0
-        return bot.health - self.opponent(bot).health
+        if self.is_gameover():
+            # ASSUMPTION self.winner must either be self.player1 or self.player2
+            x = 1 if self.winner == bot else -1
+            return x * self.winning_reward_coefficient
+        else:
+            opponent = self.opponent(bot)
+            distance = self._compute_distance(bot, opponent)
+            health_diff = self._compute_health_diference(bot, opponent)
+            return (distance * self.distance_reward_coefficient
+                    + health_diff * self.health_reward_coefficient)
+
+    def _compute_distance(self, bot1: Bot, bot2: Bot) -> float:
+        x_distance = abs((bot1.pos_x - bot1.pos_x) / len(self.board.grid[0]))
+        y_distance = abs((bot1.pos_y - bot2.pos_y) / len(self.board.grid[1]))
+        return x_distance + y_distance
+
+
+    def _compute_health_diference(self, bot1: Bot, bot2: Bot) -> float:
+        normalize = lambda b: b.health / b.max_health
+        return normalize(bot1) - normalize(bot2)
+
 
     def opponent(self, bot):
-        return self.player1 if bot == self.player2 else self.player1
+        if bot == self.player2: return self.player1
+        if bot == self.player1: return self.player2
 
     # Advance the game state until an input is needed
     def step(self):
