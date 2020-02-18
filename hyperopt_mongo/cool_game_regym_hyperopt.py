@@ -103,12 +103,13 @@ def optimization_space():
 if __name__ == '__main__':
     usage = '''
     Usage:
-        cool_game_regym_hyperopt.py BENCHMARK_EPISODES MCTS_BUDGET
+        cool_game_regym_hyperopt.py BENCHMARK_EPISODES MCTS_BUDGET MAX_EVALS
 
     Arguments:
-        BENCHMARK_EPISODES: Number of episodes that will be run per matchup
-                            to compute winrates between bots
-        MCTS_BUDGET:        Number of MCTS iterations for each agent
+        BENCHMARK_EPISODES Number of episodes that will be run per matchup
+                           to compute winrates between bots
+        MCTS_BUDGET        Number of MCTS iterations for each agent
+        MAX_EVALS          Target number of parameters updates
     '''
     arguments = docopt(usage)
     # Defining parameter space
@@ -136,7 +137,7 @@ if __name__ == '__main__':
                                           logger),
             space=space,
             algo=tpe.suggest,
-            max_evals=10,
+            max_evals=int(arguments['MAX_EVALS']),
             trials=trials)
     total = time.time() - start
     logger.info(f'END game parameter search. Total time: {total}')

@@ -16,9 +16,9 @@ from docopt import docopt
 # Wait for controller to finish optimization
 # kill workers
 # kill mongo
-def main(benchmarking_episodes, mcts_budget):
+def main(benchmarking_episodes, mcts_budget, max_evals):
     mongo_call = lambda: call(['mongod', '--dbpath', '.', '--port', '1234', '--directoryperdb'], stdout=open(os.devnull, 'w'))
-    high_level_call = lambda: call(['python', 'cool_game_regym_hyperopt.py', benchmarking_episodes, mcts_budget])
+    high_level_call = lambda: call(['python', 'cool_game_regym_hyperopt.py', benchmarking_episodes, mcts_budget, max_evals])
     worker_call = lambda: call(['hyperopt-mongo-worker', '--mongo=localhost:1234/foo_db', '--poll-interval=0.1'])
 
     mongo_p = Process(target=mongo_call)
@@ -44,14 +44,15 @@ def main(benchmarking_episodes, mcts_budget):
 if __name__ == '__main__':
     usage = '''
     Usage:
-        parallel_autobalancing.py BENCHMARK_EPISODES MCTS_BUDGET
+        parallel_autobalancing.py BENCHMARK_EPISODES MCTS_BUDGET MAX_EVALS
 
     Arguments:
-        BENCHMARK_EPISODES: Number of episodes that will be run per matchup
+        BENCHMARK_EPISODES Number of episodes that will be run per matchup
                             to compute winrates between bots
-        MCTS_BUDGET:        Number of MCTS iterations for each agent
+        MCTS_BUDGET        Number of MCTS iterations for each agent
+        MAX_EVALS          Target number of parameters updates
     '''
     arguments = docopt(usage)
     logging.basicConfig()
     install_mp_handler()
-    main(arguments['BENCHMARK_EPISODES'], arguments['MCTS_BUDGET'])
+    main(arguments['BENCHMARK_EPISODES'], arguments['MCTS_BUDGET'], arguments['MAX_EVALS'])
