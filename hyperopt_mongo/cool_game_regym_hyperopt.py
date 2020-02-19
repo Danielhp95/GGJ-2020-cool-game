@@ -32,10 +32,13 @@ def compute_matchup_winrates(agent, task, matchup: str,
     winrates = []
     for i in range(benchmarking_episodes):
         logger.info(f'Budget: {mcts_budget}. {matchup} Benchmarking: {i}/{benchmarking_episodes}')
+        start = time.time()
         winrates += benchmark_agents_on_tasks(tasks=[task],
                                               agents=[agent],
                                               populate_all_agents=True,
                                               num_episodes=1)
+        total = time.time() - start
+        logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrates[-1]}')
     winrate = sum(winrates) / len(winrates)
     logger.info(f'END: {matchup} for {benchmarking_episodes} episodes. winrate: {winrate}')
     return winrate
@@ -81,17 +84,16 @@ def generate_evaluation_matrix(cool_game_params,
 def evaluate_graph(game_params, target,
                    benchmarking_episodes, mcts_budget, logger):
     start = time.time()
-    logger.info('New iteration')
-    # Train agents (not-necessary for rps)
+    logger.info('START: New iteration')
     # Generate evaluation matrix
     a = generate_evaluation_matrix(game_params,
                                    benchmarking_episodes, mcts_budget, logger)
     # Compute response graph
     g = np.where(a < 0,  0, a) # Set to 0 all negative values
     # Compute graph distance
-    total = time.time() - start
-    logger.info(f'Total: {total}s')
     distance = absolute_edge_distance(target, g)
+    total = time.time() - start
+    logger.info(f'END: iteration. Total time: {total:.1f}s')
     return distance
 
 
@@ -160,5 +162,5 @@ if __name__ == '__main__':
             max_evals=int(arguments['MAX_EVALS']),
             trials=trials)
     total = time.time() - start
-    logger.info(f'END game parameter search. Total time: {total}')
+    logger.info(f'END game parameter search. Total time: {total:.1f}')
     logger.info(f'Best params: {best}')
