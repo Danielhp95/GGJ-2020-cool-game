@@ -160,8 +160,14 @@ class CoolGameEnv(gym.Env):
             return PygameRender(self).draw()
         elif mode == 'string':
             game_stats = f'Current tick: {self.current_state.ticks}'
-            player1_stats = f'P1: health={self.player1.health}, sleeping={self.player1.is_sleeping()}. Moves: {self.player1.get_valid_moves(self.current_state)}'
-            player2_stats = f'P2: health={self.player2.health}, sleeping={self.player2.is_sleeping()}. Moves: {self.player2.get_valid_moves(self.current_state)}'
+            p1_health = self.player1.health
+            p2_health = self.player2.health
+            p1_sleeping = self.player1.is_sleeping()
+            p2_sleeping = self.player2.is_sleeping()
+            p1_moves = self.player1.get_valid_moves(self.current_state)
+            p2_moves = self.player2.get_valid_moves(self.current_state)
+            player1_stats = f'P1: health={p1_health}, sleeping={p1_sleeping}. Moves: {p1_moves}'
+            player2_stats = f'P2: health={p2_health}, sleeping={p2_sleeping}. Moves: {p2_moves}'
             player_stats = player1_stats + '\n' + player2_stats
             board_state = str(self.current_state.board)
             return game_stats + '\n' + player_stats + '\n' + board_state
