@@ -25,8 +25,24 @@ def absolute_edge_distance(target, graph):
     return np.abs((target - graph)).mean()
 
 
+def compute_matchup_winrates(agent, task, matchup: str,
+                             benchmarking_episodes: int, mcts_budget: int,
+                             logger: logging.Logger) -> float:
+    logger.info(f'START: {matchup} for {benchmarking_episodes} episodes. Budget: {mcts_budget}')
+    winrates = []
+    for i in range(benchmarking_episodes):
+        logger.info(f'Budget: {mcts_budget}. {matchup} Benchmarking: {i}/{benchmarking_episodes}')
+        winrates += benchmark_agents_on_tasks(tasks=[task],
+                                              agents=[agent],
+                                              populate_all_agents=True,
+                                              num_episodes=1)
+    winrate = sum(winrates) / len(winrates)
+    logger.info(f'END: {matchup} for {benchmarking_episodes} episodes. winrate: {winrate}')
+    return winrate
+
+
 def generate_evaluation_matrix(cool_game_params,
-                               benchmarking_episodes, mcts_budget, logger):
+                               benchmarking_episodes, mcts_budget, logger: logging.Logger):
     # 0: SawBot 1: TorchBot 2: NailBot
     import gym_cool_game
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
@@ -39,23 +55,27 @@ def generate_evaluation_matrix(cool_game_params,
     mcts_config = {'budget': mcts_budget}
     mcts_agent = build_MCTS_Agent(saw_vs_torch_task, mcts_config, agent_name='MCTS agent')
 
-    saw_winrates = benchmark_agents_on_tasks(tasks=[saw_vs_torch_task, saw_vs_nail_task],
-                                             agents=[mcts_agent],
-                                             populate_all_agents=True,
-                                             num_episodes=benchmarking_episodes)
-    nail_winrate = benchmark_agents_on_tasks(tasks=[torch_vs_nail_task],
-                                             agents=[mcts_agent],
-                                             populate_all_agents=True,
-                                             num_episodes=benchmarking_episodes)
+    saw_vs_torch = compute_matchup_winrates(mcts_agent, saw_vs_torch_task,
+                                            'Saw vs Torch', benchmarking_episodes,
+                                            mcts_budget, logger)
+
+    saw_vs_nail = compute_matchup_winrates(mcts_agent, saw_vs_nail_task,
+                                           'Saw vs Nail', benchmarking_episodes,
+                                           mcts_budget, logger)
+
+    torch_vs_nail = compute_matchup_winrates(mcts_agent, saw_vs_nail_task,
+                                             'Torch vs Nail', benchmarking_episodes,
+                                             mcts_budget, logger)
+
 
     bench_msg = f'episodes={benchmarking_episodes} MCTS_budget={mcts_budget}'
-    winrates_msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
+    winrates_msg = f'winrates=saw:[{saw_vs_torch}, {saw_vs_nail}] nail:[{torch_vs_nail}]'
     logger.info(bench_msg)
     logger.info(winrates_msg)
     logger.info(f'params={cool_game_params}')
-    return np.array([[0., saw_winrates[0], saw_winrates[1]],
-                     [-saw_winrates[0], 0., nail_winrate[0]],
-                     [-saw_winrates[0], -nail_winrate[0], 0.]])
+    return np.array([[0., saw_vs_torch, saw_vs_nail],
+                     [-saw_vs_torch, 0., torch_vs_nail],
+                     [-saw_vs_nail, -torch_vs_nail, 0.]])
 
 
 def evaluate_graph(game_params, target,
