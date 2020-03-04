@@ -1,5 +1,5 @@
 import numpy as np
-from .bots import Bot, Bullet
+from .bots import Bot
 from .valid_inputs import *
 
 
@@ -21,16 +21,10 @@ class Board:
     # Set the position of bot to (x, y)
     # Must be passed an object of class Bot, of course
     def set(self, entity, x, y):
-        # :param: entity can be a Bot or a Bullet
         # Only attempt to set current position to 0 if entity is already on the board
         # This becomes irrelevant if bots are only ever instantiated in valid locations
         if self.currently_on_board(entity.pos_x, entity.pos_y):
-            # This check is hacky af, but whatcha gonna do
-            if isinstance(entity, Bullet):
-                if not isinstance(self.grid[entity.pos_x][entity.pos_y], Bot):
-                    self.grid[entity.pos_x][entity.pos_y] = 0
-            elif isinstance(entity, Bot):
-                self.grid[entity.pos_x][entity.pos_y] = 0
+            self.grid[entity.pos_x][entity.pos_y] = 0
             entity.pos_x = x
             entity.pos_y = y
             self.grid[x][y] = entity  # set new tile on grid to occupied
