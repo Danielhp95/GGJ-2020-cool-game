@@ -9,8 +9,11 @@ class HumanAgent:
         self.number_of_actions = number_of_actions
 
     def take_action(self, state):
-        action = input(f'Take action for {self.name}: Choose from 0-{self.number_of_actions}: ')
-        return int(action)
+        if action.isnumeric() and int(action) in range(0, 6):
+            return int(action)
+        else:
+            print("Invalid entry. Defaulting to null action.")
+            return 5
 
 
 def play_as_human(p1, p2): 

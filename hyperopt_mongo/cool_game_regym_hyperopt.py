@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     use_mongo = True
     logger.info(f'Creating trials object use mongo: {use_mongo}')
-    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp8')
+    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp7')
     else: trials = Trials()
 
     logger.info(f'START game parameter search')

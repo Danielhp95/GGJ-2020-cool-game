@@ -135,7 +135,7 @@ class PygameRender():
 
         # Player 2
         pygame.draw.rect(screen, (255, 0, 0), (600,40, (300/player2.max_health)*player2.max_health, 30))
-        pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.health)*player2.health, 30))
+        pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.max_health)*player2.health, 30))
         screen.blit(player2name, player2_text_rect)
 
         # Set size of sprite to the size of one tile
@@ -199,15 +199,12 @@ class PygameRender():
                     flame_sprite_group.draw(screen)
             # Render Nails from nail bots
             if isinstance(p, NailBot):
-                for row, column in map(lambda b: (b.pos_x, b.pos_y), p.active_bullets):
+                for b in p.active_bullets:
                     bullet_sprite = self.create_nail_sprite()
-                    bullet_sprite.rect = [(self.MARGIN + self.WIDTH) * column + self.MARGIN, (self.MARGIN + self.HEIGHT) * row + self.MARGIN]
+                    bullet_sprite.rect = [(self.MARGIN + self.WIDTH) * b.pos_y + self.MARGIN, (self.MARGIN + self.HEIGHT) * b.pos_x + self.MARGIN]
                     bullet_sprite_group = pygame.sprite.Group(bullet_sprite)
                     bullet_sprite_group.draw(screen)
 
-        # Go ahead and update the screen with what we've drawn.
-
-        # Render bullets from Nail bots
         pygame.display.flip()
 
 

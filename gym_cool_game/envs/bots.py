@@ -139,7 +139,6 @@ class TorchBot(Bot):
         for cell in self.torch_cells:
             cell = state.board.get(cell[0], cell[1])
             if hasattr(cell, 'health'):
-                # apply damage to opponent if they are in torch_cells
                 cell.health -= self.dmg
                 break
 
@@ -150,73 +149,56 @@ class NailBot(Bot):
         super(NailBot, self).__init__('NailBot', params.ticks_between_moves,
                                       params.weight, params.cooldown, params.health)
         self.dmg = params.dmg
-        self.active_time = 1
-        self.ability_counter = 0
         self.active_bullets = []
 
     def act(self, state):
-        # spawn bullet, moves in direction self.curr_rotation at speed self.bullet_speed
-        self.ability_counter = self.cooldown
-
-        # if self.curr_rotation == DIRECTION_UP: bullet_x, bullet_y = self.pos_x - 1, self.pos_y 
-        # if self.curr_rotation == DIRECTION_DOWN: bullet_x, bullet_y = self.pos_x + 1, self.pos_y
-        # if self.curr_rotation == DIRECTION_LEFT: bullet_x, bullet_y = self.pos_x, self.pos_y - 1
-        # if self.curr_rotation == DIRECTION_RIGHT: bullet_x, bullet_y = self.pos_x, self.pos_y + 1
-        new_bullet = Bullet(self.dmg, self.pos_x, self.pos_y, self.curr_rotation, state)
-        self.active_bullets.append(new_bullet)
+        if self.ticks_till_action_available <= 0:
+            self.ticks_till_action_available = self.cooldown
+            new_bullet = Bullet(self, state)
+            self.active_bullets.append(new_bullet)
 
     def tick_bot(self, state):
         super(NailBot, self).tick_bot(state)
-        self.active_time -= 1
+
         for b in self.active_bullets:
-            should_be_destroyed = b.tick(state)
-            if should_be_destroyed: self.active_bullets.remove(b) 
+            b.tick(state)
+        
+        self.active_bullets = [b for b in self.active_bullets if b.is_alive]
 
 
 class Bullet:
 
-    def __init__(self, dmg, pos_x, pos_y, direction, state):
-        self.dmg = dmg
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.direction = direction
-        # bullet_still_exists = self.handle_destruction_conditions(state)
-        # if not bullet_still_exists: return
-        # else: state.board.set(self, self.pos_x, self.pos_y)  #
+    def __init__(self, creator, state):
+        self.creator = creator
+        self.dmg = creator.dmg
+        self.pos_x = creator.pos_x
+        self.pos_y = creator.pos_y
+        self.direction = creator.curr_rotation
+        self.is_alive = True
 
     def tick(self, state):
-        new_x, new_y = self.move()
-        bullet_still_exists = self.handle_destruction_conditions(new_x, new_y, state)
-        if bullet_still_exists:
-            state.board.set(self, new_x, new_y)
-            return False  # Bullet should not be destroyed
-        else:
-            state.board.clear(self.pos_x, self.pos_y)
-            return True   # Bullet should be destroyed
-
+        self.move()
+        self.collide(state)
 
     def move(self):
-        new_x, new_y = self.pos_x, self.pos_y
         if self.direction == DIRECTION_UP:
-            new_x -= 1
+            self.pos_x -= 1
         if self.direction == DIRECTION_DOWN:
-            new_x += 1
+            self.pos_x += 1
         if self.direction == DIRECTION_LEFT:
-            new_y -= 1
+            self.pos_y -= 1
         if self.direction == DIRECTION_RIGHT:
-            new_y += 1
+            self.pos_y += 1
 
-        return new_x, new_y
+    def collide(self, state):
+        cell = state.board.get(self.pos_x, self.pos_y)
 
-    def handle_destruction_conditions(self, new_x, new_y, state):
-        cell = state.board.get(new_x, new_y)
         # Check for destruction conditions
-        if hasattr(cell, 'health'): # bot occupies area
+        if self.is_alive and hasattr(cell, 'health') and (cell != self.creator): # bot occupies area
             cell.health -= self.dmg
-            return False
-        out_of_grid = self.reached_boundary(cell)
-        if out_of_grid: return False
-        return True
+            self.is_alive = False
+
+        self.is_alive = self.is_alive and not self.reached_boundary(cell)
 
     def reached_boundary(self, cell):
         return cell == 1
