@@ -2,7 +2,7 @@ import signal
 import os
 
 import logging
-from multiprocessing_logging import install_mp_handler
+#from multiprocessing_logging import install_mp_handler
 
 from multiprocessing import Process, cpu_count
 from subprocess import call
@@ -28,7 +28,7 @@ def main(benchmarking_episodes, mcts_budget, max_evals):
     high_level_p.start()
 
     workers_p = [Process(target=worker_call)
-                 for _ in range(1)]
+                 for _ in range(cpu_count())]
     for p in workers_p: p.start()
 
     high_level_p.join()
@@ -53,6 +53,5 @@ if __name__ == '__main__':
         MAX_EVALS          Target number of parameters updates
     '''
     arguments = docopt(usage)
-    logging.basicConfig()
-    install_mp_handler()
-    main(arguments['BENCHMARK_EPISODES'], arguments['MCTS_BUDGET'], arguments['MAX_EVALS'])
+    benchmarking_episodes, mcts_budget, max_evals = arguments['BENCHMARK_EPISODES'], arguments['MCTS_BUDGET'], arguments['MAX_EVALS']
+    main(benchmarking_episodes, mcts_budget, max_evals)
