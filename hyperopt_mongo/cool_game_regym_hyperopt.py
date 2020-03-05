@@ -5,6 +5,8 @@ import numpy as np
 from hyperopt import Trials, fmin, hp, tpe
 from hyperopt.mongoexp import MongoTrials
 
+from docopt import docopt
+
 
 import gym
 import gym_cool_game
@@ -23,11 +25,28 @@ def absolute_edge_distance(target, graph):
     return np.abs((target - graph)).mean()
 
 
-def generate_evaluation_matrix(cool_game_params, logger):
-    # 0: SawBot 1: TorchBot 2: NailBot
-    benchmarking_episodes = 1
-    mcts_budget = 1
+def compute_matchup_winrates(agent, task, matchup: str,
+                             benchmarking_episodes: int, mcts_budget: int,
+                             logger: logging.Logger) -> float:
+    logger.info(f'START: {matchup} for {benchmarking_episodes} episodes. Budget: {mcts_budget}')
+    winrates = []
+    for i in range(benchmarking_episodes):
+        logger.info(f'Budget: {mcts_budget}. {matchup} Benchmarking: {i}/{benchmarking_episodes}')
+        start = time.time()
+        winrates += benchmark_agents_on_tasks(tasks=[task],
+                                              agents=[agent],
+                                              populate_all_agents=True,
+                                              num_episodes=1)
+        total = time.time() - start
+        logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrates[-1]}')
+    winrate = sum(winrates) / len(winrates)
+    logger.info(f'END: {matchup} for {benchmarking_episodes} episodes. winrate: {winrate}')
+    return winrate
 
+
+def generate_evaluation_matrix(cool_game_params,
+                               benchmarking_episodes, mcts_budget, logger: logging.Logger):
+    # 0: SawBot 1: TorchBot 2: NailBot
     import gym_cool_game
     saw_vs_torch_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=0, botB_type=1, **cool_game_params)
@@ -39,64 +58,84 @@ def generate_evaluation_matrix(cool_game_params, logger):
     mcts_config = {'budget': mcts_budget}
     mcts_agent = build_MCTS_Agent(saw_vs_torch_task, mcts_config, agent_name='MCTS agent')
 
-    saw_winrates = benchmark_agents_on_tasks(tasks=[saw_vs_torch_task, saw_vs_nail_task],
-                                             agents=[mcts_agent],
-                                             populate_all_agents=True,
-                                             num_episodes=benchmarking_episodes)
-    nail_winrate = benchmark_agents_on_tasks(tasks=[torch_vs_nail_task],
-                                             agents=[mcts_agent],
-                                             populate_all_agents=True,
-                                             num_episodes=benchmarking_episodes)
+    saw_vs_torch = compute_matchup_winrates(mcts_agent, saw_vs_torch_task,
+                                            'Saw vs Torch', benchmarking_episodes,
+                                            mcts_budget, logger)
+
+    saw_vs_nail = compute_matchup_winrates(mcts_agent, saw_vs_nail_task,
+                                           'Saw vs Nail', benchmarking_episodes,
+                                           mcts_budget, logger)
+
+    torch_vs_nail = compute_matchup_winrates(mcts_agent, saw_vs_nail_task,
+                                             'Torch vs Nail', benchmarking_episodes,
+                                             mcts_budget, logger)
+
 
     bench_msg = f'episodes={benchmarking_episodes} MCTS_budget={mcts_budget}'
-    winrates_msg = f'winrates=saw:{saw_winrates} nail:{nail_winrate}'
+    winrates_msg = f'winrates=saw:[{saw_vs_torch}, {saw_vs_nail}] nail:[{torch_vs_nail}]'
     logger.info(bench_msg)
     logger.info(winrates_msg)
     logger.info(f'params={cool_game_params}')
-    return np.array([[0., saw_winrates[0], saw_winrates[1]],
-                     [-saw_winrates[0], 0., nail_winrate[0]],
-                     [-saw_winrates[0], -nail_winrate[0], 0.]])
+    return np.array([[0., saw_vs_torch, saw_vs_nail],
+                     [-saw_vs_torch, 0., torch_vs_nail],
+                     [-saw_vs_nail, -torch_vs_nail, 0.]])
 
 
-def evaluate_graph(game_params, target, logger):
+def evaluate_graph(game_params, target,
+                   benchmarking_episodes, mcts_budget, logger):
     start = time.time()
-    logger.info('New iteration')
-    # Train agents (not-necessary for rps)
+    logger.info('START: New iteration')
     # Generate evaluation matrix
-    a = generate_evaluation_matrix(game_params, logger)
+    a = generate_evaluation_matrix(game_params,
+                                   benchmarking_episodes, mcts_budget, logger)
     # Compute response graph
     g = np.where(a < 0,  0, a) # Set to 0 all negative values
     # Compute graph distance
-    total = time.time() - start
-    logger.info(f'Total: {total}s')
     distance = absolute_edge_distance(target, g)
+    total = time.time() - start
+    logger.info(f'END: iteration. Total time: {total:.1f}s')
     return distance
 
 
+def optimization_space():
+    return {'torch_health': hp.uniformint('torch_health', 1, 10),
+            'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
+            # 'torch_weight': hp.uniformint('torch_weight', 1, 10),
+            'torch_torch_range': hp.uniformint('torch_torch_range', 1, 10),
+            'torch_duration': hp.uniformint('torch_duration', 1, 10),
+            'torch_cooldown': hp.uniformint('torch_cooldown', 1, 10),
+            'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 10),
+            # SawBot parameters 
+            'saw_health': hp.uniformint('saw_health', 1, 10),
+            'saw_dmg_min': hp.uniformint('saw_dmg_min', 1, 10),
+            'saw_dmg_max': hp.uniformint('saw_dmg_max', 1, 10),
+            # 'saw_weight': hp.uniformint('saw_weight', 1, 10),
+            'saw_duration': hp.uniformint('saw_duration', 1, 10),
+            'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
+            'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
+            # NailBot parameters
+            'nail_health': hp.uniformint('nail_health', 1, 10),
+            'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
+            # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
+            'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
+            'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
+           }
+
+
 if __name__ == '__main__':
+    usage = '''
+    Usage:
+        cool_game_regym_hyperopt.py BENCHMARK_EPISODES MCTS_BUDGET MAX_EVALS
+
+    Arguments:
+        BENCHMARK_EPISODES Number of episodes that will be run per matchup
+                           to compute winrates between bots
+        MCTS_BUDGET        Number of MCTS iterations for each agent
+        MAX_EVALS          Target number of parameters updates
+    '''
+    arguments = docopt(usage)
     # Defining parameter space
-    space = {'torch_health': hp.uniformint('torch_health', 1, 10),
-             'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
-             # 'torch_weight': hp.uniformint('torch_weight', 1, 10),
-             'torch_torch_range': hp.uniformint('torch_torch_range', 1, 10),
-             'torch_duration': hp.uniformint('torch_duration', 1, 10),
-             'torch_cooldown': hp.uniformint('torch_cooldown', 1, 10),
-             'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 10),
-             # SawBot parameters 
-             'saw_health': hp.uniformint('saw_health', 1, 10),
-             'saw_dmg_min': hp.uniformint('saw_dmg_min', 1, 10),
-             'saw_dmg_max': hp.uniformint('saw_dmg_max', 1, 10),
-             # 'saw_weight': hp.uniformint('saw_weight', 1, 10),
-             'saw_duration': hp.uniformint('saw_duration', 1, 10),
-             'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
-             'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
-             # NailBot parameters
-             'nail_health': hp.uniformint('nail_health', 1, 10),
-             'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
-             # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
-             'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
-             'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
-             }
+    space = optimization_space()
 
     # Graph target
     target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
@@ -114,11 +153,14 @@ if __name__ == '__main__':
     logger.info(f'START game parameter search')
     start = time.time()
     best = fmin(
-            lambda params: evaluate_graph(params, target, logger),
+            lambda params: evaluate_graph(params, target,
+                                          int(arguments['BENCHMARK_EPISODES']),
+                                          int(arguments['MCTS_BUDGET']),
+                                          logger),
             space=space,
             algo=tpe.suggest,
-            max_evals=10,
+            max_evals=int(arguments['MAX_EVALS']),
             trials=trials)
     total = time.time() - start
-    logger.info(f'END game parameter search. Total time: {total}')
+    logger.info(f'END game parameter search. Total time: {total:.1f}')
     logger.info(f'Best params: {best}')
