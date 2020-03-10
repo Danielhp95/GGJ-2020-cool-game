@@ -31,7 +31,7 @@ def compute_matchup_winrates(agent, task, matchup: str,
     logger.info(f'START: {matchup} for {benchmarking_episodes} episodes. Budget: {mcts_budget}')
     winrates = []
     for i in range(benchmarking_episodes):
-        logger.info(f'Budget: {mcts_budget}. {matchup} Benchmarking: {i}/{benchmarking_episodes}')
+        logger.info(f'Budget: {mcts_budget}. {matchup} episode: {i + 1}/{benchmarking_episodes}')
         start = time.time()
         winrates += benchmark_agents_on_tasks(tasks=[task],
                                               agents=[agent],
@@ -77,8 +77,8 @@ def generate_evaluation_matrix(cool_game_params,
     logger.info(winrates_msg)
     logger.info(f'params={cool_game_params}')
     return np.array([[0., saw_vs_torch, saw_vs_nail],
-                     [-saw_vs_torch, 0., torch_vs_nail],
-                     [-saw_vs_nail, -torch_vs_nail, 0.]])
+                     [1. - saw_vs_torch, 0., torch_vs_nail],
+                     [1. - saw_vs_nail, 1. - torch_vs_nail, 0.]])
 
 
 def evaluate_graph(game_params, target,
@@ -88,12 +88,13 @@ def evaluate_graph(game_params, target,
     # Generate evaluation matrix
     a = generate_evaluation_matrix(game_params,
                                    benchmarking_episodes, mcts_budget, logger)
+    logger.info(f'Response balance graph: {a}')
     # Compute response graph
     g = np.where(a < 0,  0, a) # Set to 0 all negative values
     # Compute graph distance
     distance = absolute_edge_distance(target, g)
     total = time.time() - start
-    logger.info(f'END: iteration. Total time: {total:.1f}s')
+    logger.info(f'END: iteration. Loss: {distance}. Total time: {total:.1f}s')
     return distance
 
 
@@ -140,22 +141,27 @@ if __name__ == '__main__':
     # Graph target
     target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
 
+    benchmarking_episodes = arguments['BENCHMARK_EPISODES']
+    mcts_budget = arguments['MCTS_BUDGET']
+    balancing_run_name = f'budget_{mcts_budget}_benchmarkingepisodes_{benchmarking_episodes}'
+
     # logging
     logging.basicConfig()
-    logger = logging.getLogger('CoolGame_autobalancing')
+    logger = logging.getLogger(balancing_run_name)
     logger.setLevel(logging.INFO)
 
     use_mongo = True
     logger.info(f'Creating trials object use mongo: {use_mongo}')
-    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key='exp7')
+
+    if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key=balancing_run_name)
     else: trials = Trials()
 
     logger.info(f'START game parameter search')
     start = time.time()
     best = fmin(
             lambda params: evaluate_graph(params, target,
-                                          int(arguments['BENCHMARK_EPISODES']),
-                                          int(arguments['MCTS_BUDGET']),
+                                          int(benchmarking_episodes),
+                                          int(mcts_budget),
                                           logger),
             space=space,
             algo=tpe.suggest,
