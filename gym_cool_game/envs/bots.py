@@ -1,4 +1,4 @@
-from .valid_inputs import DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_RIGHT, DIRECTION_UP, ACTION, NONE_ACTION
+from .valid_inputs import DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_RIGHT, DIRECTION_UP, ACTION, NONE_ACTION, DIRECTIONS
 from .game_params import NailBotParams, SawBotParams, TorchParams
 from colorama import Fore
 
@@ -128,14 +128,12 @@ class TorchBot(Bot):
         super(TorchBot, self).tick_bot(state)
 
     def update_torch_cells(self, state):
-        if self.curr_rotation == DIRECTION_LEFT:  # Left
-            self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)]
-        elif self.curr_rotation == DIRECTION_UP:  # Up
-            self.torch_cells = [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)]
-        elif self.curr_rotation == DIRECTION_RIGHT:  # Right
-            self.torch_cells = [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)]
-        elif self.curr_rotation == DIRECTION_DOWN:  # Down
-            self.torch_cells = [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
+        self.torch_cells = [(self.pos_x, self.pos_y - i) for i in range(1, self.torch_range+1)] + \
+                            [(self.pos_x - i, self.pos_y ) for i in range(1, self.torch_range+1)] + \
+                            [(self.pos_x, self.pos_y + i) for i in range(1, self.torch_range+1)] + \
+                            [(self.pos_x + i, self.pos_y) for i in range(1, self.torch_range+1)]
+
+        self.torch_cells = [cell for cell in self.torch_cells if state.board.currently_on_board(*cell) and state.board.get(*cell) != 1]
         for cell in self.torch_cells:
             cell = state.board.get(cell[0], cell[1])
             if hasattr(cell, 'health'):
@@ -154,8 +152,9 @@ class NailBot(Bot):
     def act(self, state):
         if self.ticks_till_action_available <= 0:
             self.ticks_till_action_available = self.cooldown
-            new_bullet = Bullet(self, state)
-            self.active_bullets.append(new_bullet)
+            for direction in DIRECTIONS:
+                new_bullet = Bullet(self, direction, state)
+                self.active_bullets.append(new_bullet)
 
     def tick_bot(self, state):
         super(NailBot, self).tick_bot(state)
@@ -168,12 +167,12 @@ class NailBot(Bot):
 
 class Bullet:
 
-    def __init__(self, creator, state):
+    def __init__(self, creator, direction, state):
         self.creator = creator
         self.dmg = creator.dmg
         self.pos_x = creator.pos_x
         self.pos_y = creator.pos_y
-        self.direction = creator.curr_rotation
+        self.direction = direction
         self.is_alive = True
 
     def tick(self, state):
