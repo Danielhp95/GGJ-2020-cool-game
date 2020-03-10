@@ -126,13 +126,16 @@ def optimization_space():
 if __name__ == '__main__':
     usage = '''
     Usage:
-        cool_game_regym_hyperopt.py BENCHMARK_EPISODES MCTS_BUDGET MAX_EVALS
+        cool_game_regym_hyperopt.py BENCHMARK_EPISODES MCTS_BUDGET MAX_EVALS [--use_mongo]
 
     Arguments:
         BENCHMARK_EPISODES Number of episodes that will be run per matchup
                            to compute winrates between bots
         MCTS_BUDGET        Number of MCTS iterations for each agent
         MAX_EVALS          Target number of parameters updates
+
+    Options:
+        --use_mongo        Whether to use MongoTrials or normal trials in Hyperopt
     '''
     arguments = docopt(usage)
     # Defining parameter space
@@ -141,8 +144,8 @@ if __name__ == '__main__':
     # Graph target
     target = np.array([[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]])
 
-    benchmarking_episodes = arguments['BENCHMARK_EPISODES']
-    mcts_budget = arguments['MCTS_BUDGET']
+    benchmarking_episodes = int(arguments['BENCHMARK_EPISODES'])
+    mcts_budget = int(arguments['MCTS_BUDGET'])
     balancing_run_name = f'budget_{mcts_budget}_benchmarkingepisodes_{benchmarking_episodes}'
 
     # logging
@@ -150,7 +153,7 @@ if __name__ == '__main__':
     logger = logging.getLogger(balancing_run_name)
     logger.setLevel(logging.INFO)
 
-    use_mongo = True
+    use_mongo = arguments['--use_mongo']
     logger.info(f'Creating trials object use mongo: {use_mongo}')
 
     if use_mongo: trials = MongoTrials('mongo://localhost:1234/foo_db/jobs', exp_key=balancing_run_name)
@@ -160,8 +163,8 @@ if __name__ == '__main__':
     start = time.time()
     best = fmin(
             lambda params: evaluate_graph(params, target,
-                                          int(benchmarking_episodes),
-                                          int(mcts_budget),
+                                          benchmarking_episodes,
+                                          mcts_budget,
                                           logger),
             space=space,
             algo=tpe.suggest,

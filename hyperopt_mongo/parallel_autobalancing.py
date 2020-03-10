@@ -18,7 +18,7 @@ from docopt import docopt
 # kill mongo
 def main(benchmarking_episodes, mcts_budget, max_evals):
     mongo_call = lambda: call(['mongod', '--dbpath', '.', '--port', '1234', '--directoryperdb'], stdout=open(os.devnull, 'w'))
-    high_level_call = lambda: call(['python', 'cool_game_regym_hyperopt.py', benchmarking_episodes, mcts_budget, max_evals])
+    high_level_call = lambda: call(['python', 'cool_game_regym_hyperopt.py', benchmarking_episodes, mcts_budget, max_evals, '--use_mongo'])
     worker_call = lambda: call(['hyperopt-mongo-worker', '--mongo=localhost:1234/foo_db', '--poll-interval=0.1'])
 
     mongo_p = Process(target=mongo_call)
