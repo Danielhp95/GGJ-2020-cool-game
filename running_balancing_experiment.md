@@ -6,7 +6,9 @@ You will need three things installed
 
 ### Python packages:
 
++ [docopt](https://github.com/docopt/docopt): `pip install docopt`
 + [Hyperopt](https://github.com/hyperopt/hyperopt): `pip install hyperopt`
++ [pymongo](https://pypi.org/project/pymongo/): `pip install pymongo`
 + [Regym](https://github.com/Danielhp95) in the branch `develop-improving-play-match-utils`: 
     1. Clone repo: `git clone https://github.com/Danielhp95`
     2. Checkout branch: `git checkout develop-improving-play-match-utils`

@@ -10,6 +10,17 @@ class Board:
         self.grid[1:-1, 1:-1] = 0
         self.grid = self.grid.tolist()
 
+    def clone(self, replace_dict):
+        cpy = Board(len(self.grid))
+        for i in range(0, len(self.grid)):
+            for j in range(0, len(self.grid)):
+                gval = self.grid[i][j]
+                if gval in replace_dict:
+                    gval = replace_dict[gval]
+                cpy.grid[i][j] = gval
+
+        return cpy
+
     # get cell at (x, y)
     def get(self, x, y):
         try:

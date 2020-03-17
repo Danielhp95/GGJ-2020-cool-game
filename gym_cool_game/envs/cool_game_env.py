@@ -42,35 +42,63 @@ class CoolGameEnv(gym.Env):
                  nail_dmg=3,
                  nail_weight=1,
                  nail_cooldown=2,
-                 nail_ticks_between_moves=1):
+                 nail_ticks_between_moves=1, omit_construction = False):
         # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
         # And a 5th "Action", which is bot dependant
-        self.action_space = Tuple([Discrete(5), Discrete(5)])
-        single_agent_observation = Box(shape=(board_size, board_size),
-                                       low=0, high=5, dtype=int) # TODO: find maximum number of values
-        self.observation_space = Tuple([single_agent_observation,
-                                        single_agent_observation])
+        if not omit_construction:
+          self.action_space = Tuple([Discrete(5), Discrete(5)])
+          single_agent_observation = Box(shape=(board_size, board_size),
+                                         low=0, high=5, dtype=int) # TODO: find maximum number of values
+          self.observation_space = Tuple([single_agent_observation,
+                                          single_agent_observation])
 
-        # Game params
-        self.max_game_ticks = max_game_ticks
-        self.p1_starting_position = p1_starting_position
-        self.p2_starting_position = p2_starting_position
+          # Game params
+          self.max_game_ticks = max_game_ticks
+          self.p1_starting_position = p1_starting_position
+          self.p2_starting_position = p2_starting_position
 
-        # Bot params
-        self.game_params = construct_game_params(
-                torch_health, torch_dmg, torch_weight,
-                torch_torch_range, torch_duration,
-                torch_cooldown, torch_ticks_between_moves,
-                saw_health,saw_dmg_min, saw_dmg_max,
-                saw_weight, saw_duration,
-                saw_cooldown, saw_ticks_between_moves,
-                nail_health, nail_dmg, nail_weight,
-                nail_cooldown, nail_ticks_between_moves)
+          # Bot params
+          self.game_params = construct_game_params(
+                  torch_health, torch_dmg, torch_weight,
+                  torch_torch_range, torch_duration,
+                  torch_cooldown, torch_ticks_between_moves,
+                  saw_health,saw_dmg_min, saw_dmg_max,
+                  saw_weight, saw_duration,
+                  saw_cooldown, saw_ticks_between_moves,
+                  nail_health, nail_dmg, nail_weight,
+                  nail_cooldown, nail_ticks_between_moves)
 
-        self.botA_type = botA_type
-        self.botB_type = botB_type
-        self.board_size = board_size       
-        self.reset()
+          self.botA_type = botA_type
+          self.botB_type = botB_type
+          self.board_size = board_size       
+          self.reset()
+
+
+    def clone(self):
+        """
+        Creates a deep copy of the game state.
+        NOTE: it is _really_ important that a copy is used during simulations
+              Because otherwise MCTS would be operating on the real game board.
+        :returns: deep copy of this GameState
+        """
+        
+        cpy = CoolGameEnv(omit_construction=True)
+        cpy.action_space = self.action_space
+        cpy.observation_space = self.observation_space
+        cpy.max_game_ticks = self.max_game_ticks
+        cpy.p1_starting_position = self.p1_starting_position
+        cpy.p2_starting_position = self.p2_starting_position
+        cpy.game_params = self.game_params
+        cpy.botA_type = self.botA_type
+        cpy.botB_type = self.botB_type
+        cpy.board_size = self.board_size
+        cpy.winner = self.winner
+        cpy.current_state = self.current_state.clone()
+        cpy.player1 = cpy.current_state.player1
+        cpy.player2 = cpy.current_state.player2
+        cpy.board = cpy.current_state.board
+
+        return cpy
 
 
     def reset(self):
@@ -95,17 +123,6 @@ class CoolGameEnv(gym.Env):
             bot = NailBot(self.game_params.nail_params)
         bot.player_index = player_index
         return bot
-
-    def clone(self):
-        """
-        Creates a deep copy of the game state.
-        NOTE: it is _really_ important that a copy is used during simulations
-              Because otherwise MCTS would be operating on the real game board.
-        :returns: deep copy of this GameState
-        """
-
-        return deepcopy(self)
-
 
     def step(self, actions: List):
         """
