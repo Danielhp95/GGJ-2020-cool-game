@@ -223,6 +223,7 @@ class Bullet:
         return cpy
 
     def tick(self, state):
+        self.collide(state)
         self.move()
         self.collide(state)
 
