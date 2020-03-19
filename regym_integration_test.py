@@ -32,19 +32,7 @@ def main():
     human_r1 = HumanAgent(task.action_dim, name='P1')
     human_r2 = HumanAgent(task.action_dim, name='P2')
 
-    import cProfile, pstats, io
-    pr = cProfile.Profile()
-    pr.enable()
-    # Stuff
-
     t = task.run_episode([mcts_r1, mcts_r2], training=False, render_mode='rgb')
-    
-    pr.disable()
-    s = io.StringIO()
-    sortby = 'cumulative'
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print(s.getvalue())
 
     print(t)
 

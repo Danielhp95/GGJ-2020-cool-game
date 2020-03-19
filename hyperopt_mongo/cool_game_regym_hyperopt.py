@@ -81,7 +81,7 @@ def generate_evaluation_matrix(cool_game_params,
                                            'Saw vs Nail', benchmarking_episodes,
                                            mcts_budget, logger)
 
-    torch_vs_nail = compute_matchup_winrates(mcts_agent, saw_vs_nail_task,
+    torch_vs_nail = compute_matchup_winrates(mcts_agent, torch_vs_nail_task,
                                              'Torch vs Nail', benchmarking_episodes,
                                              mcts_budget, logger)
 
