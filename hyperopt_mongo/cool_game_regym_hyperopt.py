@@ -1,13 +1,12 @@
-
 import time
 from copy import deepcopy
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import logging
 
 import numpy as np
 from hyperopt import Trials, fmin, hp, tpe
 from hyperopt.mongoexp import MongoTrials
-
 from docopt import docopt
-
 
 import gym
 import gym_cool_game
@@ -16,7 +15,6 @@ from regym.environments import generate_task, EnvType
 from regym.evaluation import benchmark_agents_on_tasks
 from regym.rl_algorithms import build_MCTS_Agent
 
-import logging
 
 def MSE_edge_distance(target, graph):
     return ((target - graph)**2).mean()
@@ -26,21 +24,35 @@ def absolute_edge_distance(target, graph):
     return np.abs((target - graph)).mean()
 
 
+def benchmark_and_log(matchup, task, agent, logger) -> float:
+    start = time.time()
+    winrate = benchmark_agents_on_tasks(tasks=[task],
+                                        agents=[agent],
+                                        populate_all_agents=True,
+                                        num_episodes=1)
+    total = time.time() - start
+    logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrate[-1]}')
+    return winrate[0]
+
+
 def compute_matchup_winrates(agent, task, matchup: str,
                              benchmarking_episodes: int, mcts_budget: int,
-                             logger: logging.Logger) -> float:
-
+                             logger: logging.Logger,
+                             num_workers=1) -> float:
     logger.info(f'START: {matchup} for {benchmarking_episodes} episodes. Budget: {mcts_budget}')
+
+    e = ProcessPoolExecutor(max_workers=1)
+    futures = [e.submit(benchmark_and_log,
+                        matchup=matchup,
+                        task=task.clone(),
+                        agent=agent,
+                        logger=logger)
+               for i in range(benchmarking_episodes)]
     winrates = []
-    for i in range(benchmarking_episodes):
+    for f, i in zip(as_completed(futures), range(len(futures))):
         logger.info(f'Budget: {mcts_budget}. {matchup} episode: {i + 1}/{benchmarking_episodes}')
-        start = time.time()
-        winrates += benchmark_agents_on_tasks(tasks=[task],
-                                              agents=[agent],
-                                              populate_all_agents=True,
-                                              num_episodes=1)
-        total = time.time() - start
-        logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrates[-1]}')
+        winrates.append(f.result())
+
     winrate = sum(winrates) / len(winrates)
     logger.info(f'END: {matchup} for {benchmarking_episodes} episodes. winrate: {winrate}')
 
@@ -58,7 +70,7 @@ def generate_evaluation_matrix(cool_game_params,
     torch_vs_nail_task = generate_task('CoolGame-v0', EnvType.MULTIAGENT_SIMULTANEOUS_ACTION,
                                        botA_type=1, botB_type=2, **cool_game_params)
 
-    mcts_config = {'budget': mcts_budget}
+    mcts_config = {'budget': mcts_budget, 'rollout_budget': 10}
     mcts_agent = build_MCTS_Agent(saw_vs_torch_task, mcts_config, agent_name='MCTS agent')
 
     saw_vs_torch = compute_matchup_winrates(mcts_agent, saw_vs_torch_task,
