@@ -7,13 +7,14 @@ import pygame
 class Game:
 
     def __init__(self, board, player1, player2,
-                 p1_initial_pos: List, p2_initial_pos: List,
-                 max_game_ticks: int):
+                 p1_initial_pos: List = [], p2_initial_pos: List = [],
+                 max_game_ticks: int = 0):
         self.ticks = 0
         self.max_game_ticks = max_game_ticks
         self.board = board
-        self.board.set(player1, *p1_initial_pos)
-        self.board.set(player2, *p2_initial_pos)
+        if p1_initial_pos and p2_initial_pos:
+            self.board.set(player1, *p1_initial_pos)
+            self.board.set(player2, *p2_initial_pos)
         self.player1 = player1
         self.player2 = player2
         self.winner = -1
@@ -23,6 +24,19 @@ class Game:
         self.health_reward_coefficient = 10.
         self.winning_reward_coefficient = 1000.
 
+    def clone(self):
+        p1cpy = self.player1.clone()
+        p2cpy = self.player2.clone()
+
+        cpy = Game(self.board.clone({self.player1: p1cpy, self.player2: p2cpy}), p1cpy, p2cpy)
+        cpy.ticks = self.ticks
+        cpy.max_game_ticks = self.max_game_ticks
+        cpy.winner = self.winner
+        
+        cpy.distance_reward_coefficient = self.distance_reward_coefficient
+        cpy.health_reward_coefficient = self.health_reward_coefficient
+        cpy.winning_reward_coefficient = self.winning_reward_coefficient
+        return cpy
 
     def get_score(self, bot):
         if self.is_gameover():

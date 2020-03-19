@@ -57,19 +57,16 @@ class PygameRender():
         sprite.image = pygame.transform.scale(sprite.image, (self.WIDTH, self.HEIGHT))
         return sprite
 
-
     def create_nail_sprite(self) -> NailSprite:
         sprite = NailSprite(self.nail_img)
         sprite.image = pygame.transform.scale(sprite.image, (self.WIDTH, self.HEIGHT))
         return sprite
-
 
     def get_sprite(self, player_index):
         if player_index == 0:
             return self.get_bot(self.env.botA_type)
         else:
             return self.get_bot(self.env.botB_type)
-
 
     def get_bot(self, bot_type):
         if bot_type == BOT_TYPE_SPIKE:
@@ -80,7 +77,6 @@ class PygameRender():
             return BotSprite(self.nailBot_img)
         else:
             return ValueError('Unknown Bot Type')
-
 
     def render(self):
         # Define some colors
@@ -95,8 +91,8 @@ class PygameRender():
         BOT_COLOR_B = (0, 0, 255)
         BOT_COLOR_B_FADED = (60, 60, 100)
 
-        # Set the HEIGHT and WIDTH of the screen
-        WINDOW_SIZE = [1000, 1000]
+        # Set the WIDTH and HEIGHT of the screen
+        WINDOW_SIZE = [900, 650]
         screen = pygame.display.set_mode(WINDOW_SIZE)
 
         # Background color
@@ -114,8 +110,8 @@ class PygameRender():
 
         p1_sleeping_text = 'Sleeping' if player1.is_sleeping() else 'READY'
         p2_sleeping_text = 'Sleeping' if player2.is_sleeping() else 'READY'
-        player1name = font.render(f'Player 1: {player1.health} HP. {p1_sleeping_text}', True, BLUE)
-        player2name = font.render(f'Player 2: {player2.health} HP. {p2_sleeping_text}', True, GREEN)
+        player1name = font.render(f'Player 1: {player1.health} HP. {p1_sleeping_text}', True, GREEN)
+        player2name = font.render(f'Player 2: {player2.health} HP. {p2_sleeping_text}', True, BLUE)
 
         # create a rectangular object for the
         # text surface object
@@ -129,13 +125,13 @@ class PygameRender():
         # Render player names and scoreboard
 
         # Player 1
-        pygame.draw.rect(screen, (255, 0, 0), (10,40, (300/player1.max_health)*player1.max_health, 30))
-        pygame.draw.rect(screen, (0, 128, 0), (10,40, (300/player1.max_health)*player1.health, 30))
+        pygame.draw.rect(screen, (255, 0, 0), (10,40, (250/player1.max_health)*player1.max_health, 30))
+        pygame.draw.rect(screen, (0, 128, 0), (10,40, (250/player1.max_health)*player1.health, 30))
         screen.blit(player1name, player1_text_rect)
 
         # Player 2
-        pygame.draw.rect(screen, (255, 0, 0), (600,40, (300/player2.max_health)*player2.max_health, 30))
-        pygame.draw.rect(screen, (0, 128, 0), (600,40, (300/player2.max_health)*player2.health, 30))
+        pygame.draw.rect(screen, (255, 0, 0), (520,40, (250/player2.max_health)*player2.max_health, 30))
+        pygame.draw.rect(screen, (0, 128, 0), (520,40, (250/player2.max_health)*player2.health, 30))
         screen.blit(player2name, player2_text_rect)
 
         # Set size of sprite to the size of one tile
@@ -206,8 +202,6 @@ class PygameRender():
                     bullet_sprite_group.draw(screen)
 
         pygame.display.flip()
-
-
 
     def draw(self):
         self.render()

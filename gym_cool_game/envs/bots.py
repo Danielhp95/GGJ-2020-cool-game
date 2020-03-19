@@ -26,6 +26,20 @@ class Bot():
         # To be set outside of __init__ 
         self.player_index = None
 
+    def copy_to(self, cpy):
+        cpy.ticks_between_moves = self.ticks_between_moves
+        cpy.sleep = self.sleep
+        cpy.weight = self.weight
+        cpy.pos_x = self.pos_x
+        cpy.pos_y = self.pos_y
+        cpy.name = self.name
+        cpy.curr_rotation = self.curr_rotation
+        cpy.health = self.health
+        cpy.max_health = self.max_health
+        cpy.ticks_till_action_available = self.ticks_till_action_available
+        cpy.cooldown = self.cooldown
+        cpy.player_index = self.player_index
+
     def tick(self, state):
         if self.sleep > 0:
             self.sleep -= 1
@@ -71,6 +85,7 @@ class SawBot(Bot):
     def __init__(self, params: SawBotParams):
         Bot.__init__(self, 'SawBot', params.ticks_between_moves, params.weight,
                      params.cooldown, params.health)
+        self.params = params
         self.dmg_min = params.dmg_min
         self.dmg_max = params.dmg_max
         self.duration = params.duration
@@ -98,6 +113,13 @@ class SawBot(Bot):
                 break
         super(SawBot, self).tick_bot(state)
 
+    def clone(self):
+        cpy = SawBot(self.params)
+        self.copy_to(cpy)
+        cpy.dmg = self.dmg
+        cpy.active_time = self.active_time
+        return cpy
+
 
 class TorchBot(Bot):
 
@@ -105,6 +127,7 @@ class TorchBot(Bot):
         Bot.__init__(self, 'TorchBot', params.ticks_between_moves,
                      params.weight, params.cooldown, params.health)
 
+        self.params = params
         self.dmg = params.dmg
         self.torch_range = params.torch_range
         self.duration = params.duration
@@ -140,12 +163,21 @@ class TorchBot(Bot):
                 cell.health -= self.dmg
                 break
 
+    def clone(self):
+        cpy = TorchBot(self.params)
+        self.copy_to(cpy)
+        cpy.active_time = self.active_time
+        cpy.torch_cells = self.torch_cells.copy()
+
+        return cpy
+
 
 class NailBot(Bot):
 
     def __init__(self, params: NailBotParams):
         super(NailBot, self).__init__('NailBot', params.ticks_between_moves,
                                       params.weight, params.cooldown, params.health)
+        self.params = params
         self.dmg = params.dmg
         self.active_bullets = []
 
@@ -165,6 +197,14 @@ class NailBot(Bot):
         self.active_bullets = [b for b in self.active_bullets if b.is_alive]
 
 
+    def clone(self):
+        cpy = NailBot(self.params)
+        self.copy_to(cpy)
+        cpy.active_bullets = [b.clone() for b in self.active_bullets]
+        return cpy
+
+
+
 class Bullet:
 
     def __init__(self, creator, direction, state):
@@ -175,7 +215,15 @@ class Bullet:
         self.direction = direction
         self.is_alive = True
 
+    def clone(self):
+        cpy = Bullet(self.creator, self.direction, None)
+        cpy.is_alive = self.is_alive
+        cpy.pos_x = self.pos_x
+        cpy.pos_y = self.pos_y
+        return cpy
+
     def tick(self, state):
+        self.collide(state)
         self.move()
         self.collide(state)
 
