@@ -1,12 +1,13 @@
+
 import time
 from copy import deepcopy
-from concurrent.futures import ProcessPoolExecutor, as_completed
-import logging
 
 import numpy as np
 from hyperopt import Trials, fmin, hp, tpe
 from hyperopt.mongoexp import MongoTrials
+
 from docopt import docopt
+
 
 import gym
 import gym_cool_game
@@ -17,6 +18,7 @@ from regym.rl_algorithms import build_MCTS_Agent
 
 from save_trial import save_trial
 
+import logging
 
 def MSE_edge_distance(target, graph):
     return ((target - graph)**2).mean()
@@ -26,35 +28,21 @@ def absolute_edge_distance(target, graph):
     return np.abs((target - graph)).mean()
 
 
-def benchmark_and_log(matchup, task, agent, logger) -> float:
-    start = time.time()
-    winrate = benchmark_agents_on_tasks(tasks=[task],
-                                        agents=[agent],
-                                        populate_all_agents=True,
-                                        num_episodes=1)
-    total = time.time() - start
-    logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrate[-1]}')
-    return winrate[0]
-
-
 def compute_matchup_winrates(agent, task, matchup: str,
                              benchmarking_episodes: int, mcts_budget: int,
-                             logger: logging.Logger,
-                             num_workers=1) -> float:
+                             logger: logging.Logger) -> float:
+
     logger.info(f'START: {matchup} for {benchmarking_episodes} episodes. Budget: {mcts_budget}')
-
-    e = ProcessPoolExecutor(max_workers=1)
-    futures = [e.submit(benchmark_and_log,
-                        matchup=matchup,
-                        task=task.clone(),
-                        agent=agent,
-                        logger=logger)
-               for i in range(benchmarking_episodes)]
     winrates = []
-    for f, i in zip(as_completed(futures), range(len(futures))):
+    for i in range(benchmarking_episodes):
         logger.info(f'Budget: {mcts_budget}. {matchup} episode: {i + 1}/{benchmarking_episodes}')
-        winrates.append(f.result())
-
+        start = time.time()
+        winrates += benchmark_agents_on_tasks(tasks=[task],
+                                              agents=[agent],
+                                              populate_all_agents=True,
+                                              num_episodes=1)
+        total = time.time() - start
+        logger.info(f'{matchup} with Budget: {mcts_budget} took {total:.1f}s. Winner: {winrates[-1]}')
     winrate = sum(winrates) / len(winrates)
     logger.info(f'END: {matchup} for {benchmarking_episodes} episodes. winrate: {winrate}')
 
@@ -119,24 +107,24 @@ def optimization_space():
     return {'torch_health': hp.uniformint('torch_health', 1, 10),
             'torch_dmg': hp.uniformint('torch_dmg', 1, 10),
             # 'torch_weight': hp.uniformint('torch_weight', 1, 10),
-            'torch_torch_range': hp.uniformint('torch_torch_range', 1, 10),
-            'torch_duration': hp.uniformint('torch_duration', 1, 10),
-            'torch_cooldown': hp.uniformint('torch_cooldown', 1, 10),
-            'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 10),
+            'torch_torch_range': hp.uniformint('torch_torch_range', 1, 4),
+            'torch_duration': hp.uniformint('torch_duration', 1, 6),
+            'torch_cooldown': hp.uniformint('torch_cooldown', 1, 6),
+            'torch_ticks_between_moves': hp.uniformint('torch_ticks_between_moves', 1, 6),
             # SawBot parameters 
             'saw_health': hp.uniformint('saw_health', 1, 10),
             'saw_dmg_min': hp.uniformint('saw_dmg_min', 1, 10),
             'saw_dmg_max': hp.uniformint('saw_dmg_max', 1, 10),
             # 'saw_weight': hp.uniformint('saw_weight', 1, 10),
-            'saw_duration': hp.uniformint('saw_duration', 1, 10),
-            'saw_cooldown': hp.uniformint('saw_cooldown', 1, 10),
-            'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 10),
+            'saw_duration': hp.uniformint('saw_duration', 1, 6),
+            'saw_cooldown': hp.uniformint('saw_cooldown', 1, 6),
+            'saw_ticks_between_moves': hp.uniformint('saw_ticks_between_moves', 1, 6),
             # NailBot parameters
             'nail_health': hp.uniformint('nail_health', 1, 10),
             'nail_dmg': hp.uniformint('nail_dmg', 1, 10),
             # 'nail_weight': hp.uniformint('nail_weight', 1, 10),
-            'nail_cooldown': hp.uniformint('nail_cooldown', 1, 10),
-            'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 10)
+            'nail_cooldown': hp.uniformint('nail_cooldown', 1, 6),
+            'nail_ticks_between_moves': hp.uniformint('nail_ticks_between_moves', 1, 6)
            }
 
 

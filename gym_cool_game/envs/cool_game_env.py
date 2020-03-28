@@ -17,10 +17,10 @@ class CoolGameEnv(gym.Env):
 
     def __init__(self,
                  botA_type: int = 0, botB_type: int = 0,
-                 board_size: int = 8,
-                 max_game_ticks: int = 1000,
-                 p1_starting_position: List = [3,3],
-                 p2_starting_position: List = [5,5],
+                 board_size: int = 7,
+                 max_game_ticks: int = 500,
+                 p1_starting_position: List = [2,2],
+                 p2_starting_position: List = [4,4],
                  # TorchBot parameters
                  torch_health=10,
                  torch_dmg=2,
