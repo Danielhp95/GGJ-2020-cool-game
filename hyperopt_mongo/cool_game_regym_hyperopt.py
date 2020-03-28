@@ -15,6 +15,8 @@ from regym.environments import generate_task, EnvType
 from regym.evaluation import benchmark_agents_on_tasks
 from regym.rl_algorithms import build_MCTS_Agent
 
+from save_trial import save_trial
+
 
 def MSE_edge_distance(target, graph):
     return ((target - graph)**2).mean()
@@ -188,3 +190,5 @@ if __name__ == '__main__':
     total = time.time() - start
     logger.info(f'END game parameter search. Total time: {total:.1f}')
     logger.info(f'Best params: {best}')
+
+    save_trial(trials, name=balancing_run_name)
