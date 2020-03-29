@@ -34,6 +34,9 @@ def create_formated_dicts(trials):
     param_value_evolution['value'] = []
     for t in trials.trials:
         # Add values for this iteration
+        if t['result']['status'] != 'ok':
+            print(f"Skipping trial with status: {t['result']['status']}")
+            continue
         for p_name, p_value in t['misc']['vals'].items():
             param_value_evolution['params_'+p_name].append(p_value[0]) # p_value is a singleton list
         # Add loss
