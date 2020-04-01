@@ -22,27 +22,27 @@ class CoolGameEnv(gym.Env):
                  p1_starting_position: List = [2,2],
                  p2_starting_position: List = [4,4],
                  # TorchBot parameters
-                 torch_health=10,
-                 torch_dmg=2,
+                 torch_health=7,
+                 torch_dmg=3,
                  torch_weight=2,
-                 torch_torch_range=4,
+                 torch_torch_range=3,
                  torch_duration=2,
-                 torch_cooldown=2,
-                 torch_ticks_between_moves=2,
+                 torch_cooldown=5,
+                 torch_ticks_between_moves=4,
                  # SawBot parameters 
-                 saw_health=5,
-                 saw_dmg_min=1,
-                 saw_dmg_max=2,
+                 saw_health=4,
+                 saw_dmg_min=6,
+                 saw_dmg_max=6,
                  saw_weight=3,
                  saw_duration=3,
-                 saw_cooldown=5,
-                 saw_ticks_between_moves=1,
+                 saw_cooldown=3,
+                 saw_ticks_between_moves=5,
                  # NaileBot parameters
-                 nail_health=7,
-                 nail_dmg=3,
+                 nail_health=3,
+                 nail_dmg=9,
                  nail_weight=1,
-                 nail_cooldown=2,
-                 nail_ticks_between_moves=1, omit_construction = False):
+                 nail_cooldown=1,
+                 nail_ticks_between_moves=2, omit_construction = False):
         # Each player has 5 actions. Directional moves: UP / DOWN/ LEFT / RIGHT
         # And a 5th "Action", which is bot dependant
         if not omit_construction:
