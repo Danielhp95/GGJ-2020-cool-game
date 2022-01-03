@@ -101,6 +101,7 @@ def evaluate_graph(game_params, target,
     distance = absolute_edge_distance(target, g)
     total = time.time() - start
     logger.info(f'END: iteration. Loss: {distance}. Total time: {total:.1f}s')
+    wandb.log({'graph_distance': distance})
     return distance
 
 if __name__ == '__main__':
