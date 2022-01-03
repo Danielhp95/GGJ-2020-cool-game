@@ -4,6 +4,7 @@ from regym.environments import generate_task, EnvType
 from regym.rl_algorithms import build_Random_Agent, build_MCTS_Agent
 import numpy as np
 import random
+from copy import deepcopy 
 
 class HumanAgent:
 
@@ -24,16 +25,23 @@ def main():
                          botA_type=1, botB_type=2)
 
     random_r1 = build_Random_Agent(task, {}, agent_name='random')
-    random_r2 = random_r1.clone()
+    random_r2 = deepcopy(random_r1)
 
-    mcts_r1 = build_MCTS_Agent(task, {'budget': 625, 'rollout_budget': 10}, agent_name='P1: MCTS')
-    mcts_r2 = build_MCTS_Agent(task, {'budget': 625, 'rollout_budget': 10}, agent_name='P2: MCTS')
+    mcts_config = {
+        'budget': 10,
+        'rollout_budget': 1000,
+        'selection_phase': 'ucb1',
+        'exploration_factor_ucb1': 4  # Might need to tweak this?
+    }
+
+    mcts_r1 = build_MCTS_Agent(task, mcts_config, agent_name='P1: MCTS')
+    mcts_r2 = build_MCTS_Agent(task, mcts_config, agent_name='P2: MCTS')
 
     human_r1 = HumanAgent(task.action_dim, name='P1')
     human_r2 = HumanAgent(task.action_dim, name='P2')
 
-    t = task.run_episode([mcts_r1, mcts_r2], training=False, render_mode='rgb', save_gif=True)
-
+    # t = task.run_episode([mcts_r1, mcts_r2], training=False, render_mode='rgb', save_gif=True)
+    t = task.run_episode([mcts_r1, mcts_r2], training=False)
     print(t)
 
 

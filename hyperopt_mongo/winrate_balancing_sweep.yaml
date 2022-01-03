@@ -1,0 +1,82 @@
+command:
+  - ${env}
+  - ${interpreter}
+  - cool_game_regym_wb.py
+  - --benchmarking_episodes
+  - 50
+  - --mcts_budget
+  - 625
+  - --balancing_type
+  - fair
+project: autobalancing
+method: bayes
+metric:
+  name: graph_distance
+  goal: minimize
+parameters:
+  torch_health:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  torch_dmg:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  torch_torch_range:
+    distribution: int_uniform
+    min: 1
+    max: 4
+  torch_duration:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  torch_cooldown:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  torch_ticks_between_moves:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  # SawBot parameters 
+  saw_health:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  saw_dmg_min:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  saw_dmg_max:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  saw_duration:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  saw_cooldown:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  saw_ticks_between_moves:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  # NailBot parameters
+  nail_health:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  nail_dmg:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  nail_cooldown:
+    distribution: int_uniform
+    min: 1
+    max: 6
+  nail_ticks_between_moves:
+    distribution: int_uniform
+    min: 1
+    max: 6
